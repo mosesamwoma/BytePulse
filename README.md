@@ -21,9 +21,21 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 
 ---
 
+## Requirements
+
+Before you start, make sure you have the following installed:
+
+- Windows 10 or 11
+- [Python 3.8+](https://www.python.org/downloads/) — during installation, check **"Add Python to PATH"**
+- Git — [download here](https://git-scm.com/downloads)
+
+---
+
 ## Getting Started
 
 ### 1. Clone the repo
+
+Open PowerShell or Command Prompt and run:
 ```bash
 git clone https://github.com/mosesamwoma/BytePulse.git
 cd BytePulse
@@ -34,48 +46,109 @@ cd BytePulse
 pip install -r requirements.txt
 ```
 
-### 3. Run manually
-```bash
+### 3. Set up your launcher files
+
+BytePulse uses two files to run — you need to create them from the provided examples.
+
+**Step 1 — Create `start_tracker.bat`:**
+
+- Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`
+- Open it in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
+
+Example:
+```bat
+cd /d "C:\Users\YourName\Documents\BytePulse"
+```
+
+**Step 2 — Create `run_hidden.vbs`:**
+
+- Copy `run_hidden.example.vbs` and rename it to `run_hidden.vbs`
+- Open it in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
+
+Example:
+```vbs
+WshShell.Run chr(34) & "C:\Users\YourName\Documents\BytePulse\start_tracker.bat" & chr(34), 0
+```
+
+### 4. Run manually (to test)
+
+Double-click `start_tracker.bat` or run in PowerShell:
+```powershell
 .\start_tracker.bat
 ```
 
-### 4. Run silently on startup
-
-Copy `run_hidden.vbs` to your Windows Startup folder:
+You should see:
 ```
-C:\Users\<YourName>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
+Starting WiFi tracker...
+[16:34:51] Tracker started (30-minute auto-save)
+[16:34:51] Connected: Wi-Fi
 ```
 
-The tracker will start automatically and silently every time you log in.
+After 30 minutes, check `data/usage_log.csv` — a row should appear.
+
+### 5. Run silently on startup (recommended)
+
+To make BytePulse start automatically every time you log into Windows with no visible window:
+
+1. Press `Win + R`, type `shell:startup`, hit Enter
+2. Copy `run_hidden.vbs` into the folder that opens
+3. Restart your PC
+
+That's it — BytePulse will now run silently in the background every time you log in.
+
+To confirm it's running after restart:
+```powershell
+Get-Process python
+```
+
+If Python appears in the list, the tracker is active.
 
 ---
 
 ## CSV Output
 
-Data is saved to `data/usage_log.csv`:
+All data is saved to `data/usage_log.csv`:
 
 | start_time | end_time | duration_minutes | bytes_sent | bytes_received | total_bytes | usage_MB |
 |---|---|---|---|---|---|---|
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
 
+A new row is added every 30 minutes while connected, and immediately on disconnect or shutdown.
+
 ---
 
-## Configuration
+## Logs
 
-In `src/tracker.py`:
-```python
-POLL_INTERVAL = 5 
-AUTO_SAVE_INTERVAL = 1800 
+Activity is logged to `data/tracker.log`:
+```
+2026-03-17 16:34:51 - Tracker started (30-minute auto-save)
+2026-03-17 16:34:51 - Connected: Wi-Fi
+2026-03-17 16:35:08 - Auto-saving (30 min)
+2026-03-17 16:35:08 - Saved: 34.299827 MB in 30.0000 mins
 ```
 
 ---
 
-## Requirements
+## Configuration
 
-- Windows 10/11
-- Python 3.8+
-- psutil
-- pandas
+Open `src/tracker.py` and adjust these two values at the top:
+```python
+POLL_INTERVAL = 5          # How often to check WiFi status in seconds
+AUTO_SAVE_INTERVAL = 1800  # How often to save a session — 1800 = 30 minutes
+```
+
+To test with a shorter interval, set `AUTO_SAVE_INTERVAL = 60` for 1-minute saves.
+
+---
+
+## Stopping the Tracker
+
+To stop the tracker, open Task Manager → find the `python` process → End Task.
+
+Or in PowerShell:
+```powershell
+Stop-Process -Name python -Force
+```
 
 ---
 
