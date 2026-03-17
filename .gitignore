@@ -1,0 +1,5 @@
+start_tracker.bat
+__pycache__/
+*.pyc
+data/*.csv
+data/*.log
