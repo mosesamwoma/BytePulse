@@ -1,4 +1,4 @@
-# BytePulse 📡
+# BytePulse
 
 > A lightweight WiFi usage tracker that silently monitors, logs, and helps you understand your real-time data consumption — session by session.
 
@@ -93,7 +93,3 @@ AUTO_SAVE_INTERVAL = 1800
 **Moses Amwoma** — [@AmwomaMoses](https://twitter.com/AmwomaMoses) · [GitHub](https://github.com/mosesamwoma)
 
 ---
-
-## License
-
-MIT
