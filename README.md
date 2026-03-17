@@ -1,4 +1,4 @@
-# BytePulse 📡
+# BytePulse
 
 > A lightweight WiFi usage tracker that silently monitors, logs, and helps you understand your real-time data consumption — session by session.
 
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 - Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
 - Copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, do the same
 
-> 💡 To find your path: open File Explorer, navigate to the BytePulse folder, click the address bar — copy what it shows.
+>  To find your path: open File Explorer, navigate to the BytePulse folder, click the address bar — copy what it shows.
 
 ### 4. Run manually to test
 ```powershell
@@ -66,7 +66,7 @@ After 30 minutes check `data/usage_log.csv` — a row should appear.
 
 1. Press `Win + R`, type `shell:startup`, click OK
 
-> 💡 **Win + R** — hold the Windows logo key and tap R. A small Run box appears at the bottom-left of your screen.
+>  **Win + R** — hold the Windows logo key and tap R. A small Run box appears at the bottom-left of your screen.
 
 2. Copy `run_hidden.vbs` into that folder
 3. Restart your PC
@@ -107,11 +107,5 @@ Stop-Process -Name python -Force
 - [ ] Usage visualization dashboard
 - [ ] Data cap alerts
 - [ ] Export to Excel
-
----
-
-## Author
-
-**Moses Amwoma** — [@AmwomaMoses](https://twitter.com/AmwomaMoses) · [GitHub](https://github.com/mosesamwoma)
 
 ---
