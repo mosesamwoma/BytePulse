@@ -1,6 +1,6 @@
 # BytePulse
 
-> A lightweight WiFi usage tracker that silently monitors, logs, and helps you understand your real-time data consumption — session by session.
+> Capture, log, and analyze WiFi usage in real time — BytePulse transforms everyday network activity into structured, session-level data for meaningful insights and visualization.
 
 ---
 
