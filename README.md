@@ -24,7 +24,9 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 ## Requirements
 
 - Windows 10/11
-- [Python 3.8+](https://www.python.org/downloads/) — check **"Add Python to PATH"** during install
+- [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
+
+> ⚠️ **Important:** `psutil` has known compatibility issues with Python versions above 3.11. Use Python 3.11 specifically to avoid installation or runtime errors.
 
 ---
 
@@ -46,7 +48,7 @@ pip install -r requirements.txt
 - Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
 - Copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, do the same
 
->  To find your path: open File Explorer, navigate to the BytePulse folder, click the address bar — copy what it shows.
+> 💡 To find your path: open File Explorer, navigate to the BytePulse folder, click the address bar — copy what it shows.
 
 ### 4. Run manually to test
 ```powershell
@@ -65,7 +67,7 @@ After 30 minutes check `data/usage_log.csv` — a row should appear.
 
 1. Press `Win + R`, type `shell:startup`, click OK
 
->  **Win + R** — hold the Windows logo key and tap R. A small Run box appears at the bottom-left of your screen.
+> 💡 **Win + R** — hold the Windows logo key and tap R. A small Run box appears at the bottom-left of your screen.
 
 2. Copy `run_hidden.vbs` into that folder
 3. Restart your PC
@@ -82,6 +84,11 @@ Get-Process python
 | start_time | end_time | duration_minutes | bytes_sent | bytes_received | total_bytes | usage_MB |
 |---|---|---|---|---|---|---|
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
+
+> ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy the file first:
+> ```powershell
+> copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
+> ```
 
 ---
 
