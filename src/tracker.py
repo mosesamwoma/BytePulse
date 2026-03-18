@@ -15,7 +15,7 @@ FILE_PATH = os.path.join(DATA_DIR, "usage_log.csv")
 LOG_PATH = os.path.join(DATA_DIR, "tracker.log")
 
 POLL_INTERVAL = 5
-AUTO_SAVE_INTERVAL = 1800
+AUTO_SAVE_INTERVAL = 1800 #hapa ndio unachange time unataka
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
