@@ -18,6 +18,8 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Runs invisibly on Windows startup via Startup folder
 - Raw CSV output — ready for analysis, visualization, or aggregation
 - Handles interface changes, counter rollovers, and disconnects gracefully
+- Streamlit dashboard with daily, weekly, and monthly summaries
+- Peak hour analysis and usage trend charts
 
 ---
 
@@ -79,6 +81,21 @@ Get-Process python
 
 ---
 
+## Dashboard
+
+Run the Streamlit dashboard to visualize your usage data:
+```bash
+streamlit run app.py
+```
+
+Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly views from the sidebar.
+
+![Dashboard overview](screenshort/1.png)
+
+![Peak hours and detailed data](screenshort/2.png)
+
+---
+
 ## CSV Output
 
 | start_time | end_time | duration_minutes | bytes_sent | bytes_received | total_bytes | usage_MB |
@@ -109,9 +126,5 @@ Stop-Process -Name python -Force
 
 ## Roadmap
 
-- [ ] Daily / weekly / monthly usage summaries
-- [ ] Usage visualization dashboard
 - [ ] Data cap alerts
 - [ ] Export to Excel
-
----
