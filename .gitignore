@@ -5,3 +5,5 @@ __pycache__/
 data/*.csv
 data/*.log
 *.pdf
+
+byt_v_env/
