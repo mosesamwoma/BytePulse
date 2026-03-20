@@ -1,6 +1,6 @@
 # BytePulse
 
-> Capture, log, and analyze WiFi usage in real time — BytePulse transforms everyday network activity into structured, session-level data for meaningful insights and visualization.
+> See exactly how your internet data is used — track every WiFi session, detect heavy usage, and visualize patterns locally with zero tracking
 
 ---
 
