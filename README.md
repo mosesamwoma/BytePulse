@@ -127,6 +127,9 @@ Stop-Process -Name python -Force
 ## Roadmap
 
 - [ ] Data cap alerts
-- [ ] Export to Excel
+- [ ] Per-SSID usage breakdown
+- [ ] Anomaly detection — flag sessions with unusually high usage
+- [ ] Usage heatmap (hour × day of week)
+- [ ] ISP billing cycle alignment
 
-
+---
