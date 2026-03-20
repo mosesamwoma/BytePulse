@@ -128,3 +128,6 @@ Stop-Process -Name python -Force
 
 - [ ] Data cap alerts
 - [ ] Export to Excel
+- [ ] Build a Machine Learning Model
+
+
