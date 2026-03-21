@@ -1,8 +1,3 @@
-@echo off
-cd /d "C:\path\to\BytePulse"
-if not exist data mkdir data
-python src\tracker.py
-if %errorlevel% neq 0 (
-    echo Tracker exited with error code %errorlevel%
-    pause
-)
+Set WshShell = CreateObject("WScript.Shell")
+WshShell.Run chr(34) & "C:\path\to\BytePulse\start_tracker.bat" & chr(34), 0
+Set WshShell = Nothing
