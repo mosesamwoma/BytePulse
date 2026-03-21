@@ -147,10 +147,10 @@ Stop-Process -Name python -Force
 ## Roadmap
 
 - [ ] Data cap alerts
-- [ ] Per-SSID usage breakdown
-- [ ] Anomaly detection — flag sessions with unusually high usage
+- [ ] Per-SSID tracking
+- [ ] Anomaly detection
 - [ ] Usage heatmap (hour × day of week)
-- [ ] ISP billing cycle alignment
 - [ ] Task Scheduler support for more reliable startup on restrictive Windows configurations
+- [ ] Tray icon
 
 ---
