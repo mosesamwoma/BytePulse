@@ -25,7 +25,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 
 ---
 
-## Requirements~
+## Requirements
 - Windows 10/11
 - [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
 
