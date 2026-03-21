@@ -6,7 +6,7 @@
 
 ## What It Does
 
-BytePulse runs silently in the background on Windows. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a CSV file at regular intervals — no cloud, no subscriptions, just clean local data.
+BytePulse runs silently in the background on Windows. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a CSV and JSON file at regular intervals — no cloud, no subscriptions, just clean local data.
 
 ---
 
@@ -16,15 +16,16 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Logs bytes sent, received, total usage, and duration per session
 - Configurable save interval (default: 30 minutes)
 - Runs invisibly on Windows startup via Startup folder
-- Raw CSV output — ready for analysis, visualization, or aggregation
+- Dual output — CSV and JSON, both ready for analysis, visualization, or aggregation
+- JSON atomic writes — no corruption on crash or forced shutdown
+- Duplicate instance prevention via lock file
 - Handles interface changes, counter rollovers, and disconnects gracefully
 - Streamlit dashboard with daily, weekly, and monthly summaries
 - Peak hour analysis and usage trend charts
 
 ---
 
-## Requirements
-
+## Requirements~
 - Windows 10/11
 - [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
 
@@ -96,11 +97,30 @@ Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly view
 
 ---
 
-## CSV Output
+## Output Files
+
+Both files are saved in the `data/` folder and stay in sync — if one write fails, the other preserves the data.
+
+### CSV — `data/usage_log.csv`
 
 | start_time | end_time | duration_minutes | bytes_sent | bytes_received | total_bytes | usage_MB |
 |---|---|---|---|---|---|---|
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
+
+### JSON — `data/usage_log.json`
+```json
+[
+  {
+    "start_time": "2026-03-17 16:34:51",
+    "end_time": "2026-03-17 16:35:56",
+    "duration_minutes": 1.0873,
+    "bytes_sent": 886606,
+    "bytes_received": 1629334,
+    "total_bytes": 2515940,
+    "usage_MB": 2.3993
+  }
+]
+```
 
 > ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy the file first:
 > ```powershell
@@ -131,5 +151,6 @@ Stop-Process -Name python -Force
 - [ ] Anomaly detection — flag sessions with unusually high usage
 - [ ] Usage heatmap (hour × day of week)
 - [ ] ISP billing cycle alignment
+- [ ] Task Scheduler support for more reliable startup on restrictive Windows configurations
 
 ---
