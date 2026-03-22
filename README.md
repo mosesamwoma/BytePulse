@@ -13,7 +13,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 ## Features
 
 - Automatic WiFi detection and session tracking
-- Logs bytes sent, received, total usage, and duration per session
+- Logs bytes sent, received and total usage
 - Configurable save interval (default: 30 minutes)
 - Runs invisibly on Windows startup via Startup folder
 - Dual output — CSV and JSON, both ready for analysis, visualization, or aggregation
