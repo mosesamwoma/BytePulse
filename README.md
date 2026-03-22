@@ -144,6 +144,16 @@ Stop-Process -Name python -Force
 
 ---
 
+## Limitations
+
+- Windows only — no Linux or macOS support
+- WiFi only — Ethernet and mobile hotspot not tracked
+- No per-app tracking — logs total usage only
+- Requires Python 3.11 specifically
+- Opening CSV in Excel while tracker runs may cause save failures
+
+---
+
 ## Roadmap
 
 - [ ] Data cap alerts
