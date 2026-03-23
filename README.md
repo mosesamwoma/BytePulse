@@ -51,16 +51,16 @@ pip install -r requirements.txt
 - Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
 - Copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, do the same
 
-> 💡 **To find your path:** Open File Explorer, navigate to the BytePulse folder, click the address bar — it will show something like `C:\Users\YourName\Documents\BytePulse`. Copy that.
+> 💡 **To find your path:** Open File Explorer, navigate to the BytePulse folder, click the address bar — it will show something like `C:\Users\YourName\BytePulse`. Copy that.
 
 In `start_tracker.bat`, the line to update looks like this:
 ```bat
-cd /d "C:\Users\YourName\Documents\BytePulse"
+cd /d "C:\Users\YourName\BytePulse"
 ```
 
 In `run_hidden.vbs`, the line to update looks like this — only change the path in the middle, leave the `chr(34) &` parts exactly as they are:
 ```vbs
-WshShell.Run chr(34) & "C:\Users\YourName\Documents\BytePulse\start_tracker.bat" & chr(34), 0
+WshShell.Run chr(34) & "C:\Users\YourName\BytePulse\start_tracker.bat" & chr(34), 0
 ```
 
 > 💡 To see file extensions while renaming: open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `.bat.bat` or `.vbs.vbs`.
