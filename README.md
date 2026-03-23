@@ -51,7 +51,19 @@ pip install -r requirements.txt
 - Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
 - Copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, do the same
 
-> 💡 To find your path: open File Explorer, navigate to the BytePulse folder, click the address bar — copy what it shows.
+> 💡 **To find your path:** Open File Explorer, navigate to the BytePulse folder, click the address bar — it will show something like `C:\Users\YourName\Documents\BytePulse`. Copy that.
+
+In `start_tracker.bat`, the line to update looks like this:
+```bat
+cd /d "C:\Users\YourName\Documents\BytePulse"
+```
+
+In `run_hidden.vbs`, the line to update looks like this — only change the path in the middle, leave the `chr(34) &` parts exactly as they are:
+```vbs
+WshShell.Run chr(34) & "C:\Users\YourName\Documents\BytePulse\start_tracker.bat" & chr(34), 0
+```
+
+> 💡 To see file extensions while renaming: open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `.bat.bat` or `.vbs.vbs`.
 
 ### 4. Run manually to test
 ```powershell
@@ -148,7 +160,7 @@ Stop-Process -Name python -Force
 
 - Windows only — no Linux or macOS support
 - WiFi only — Ethernet and mobile hotspot not tracked
-- No per-app tracking or per SSID tracking(total usage only)
+- No per-app tracking or per-SSID tracking (total usage only)
 - Requires Python 3.11 specifically
 - Opening CSV in Excel while tracker runs may cause save failures
 
@@ -159,10 +171,10 @@ Stop-Process -Name python -Force
 - [ ] Data cap alerts
 - [ ] Per-SSID tracking
 - [ ] Anomaly detection
-- [ ] Hour * heatmap
+- [ ] Hourly heatmap
 - [ ] Enhanced visualizations
-- [ ] Task schedular intergration
+- [ ] Task Scheduler integration
 - [ ] System tray icon
-- [ ] Cross platform support
+- [ ] Cross-platform support
 
 ---
