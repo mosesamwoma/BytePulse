@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
 
 st.set_page_config(page_title="BytePulse", layout="wide")
@@ -10,6 +11,8 @@ def load_cached():
     return load_data()
 
 df = load_cached()
+df["hour"] = df["start_time"].dt.hour
+df["day_name"] = df["start_time"].dt.day_name()
 
 view = st.sidebar.selectbox("View", ["Daily", "Weekly", "Monthly"])
 
@@ -43,7 +46,6 @@ st.bar_chart(data.set_index(x)["sessions"])
 st.markdown("---")
 
 st.subheader("Peak Hours")
-df["hour"] = df["start_time"].dt.hour
 peak = df.groupby("hour")["usage_MB"].sum().reset_index()
 peak.columns = ["hour", "usage_MB"]
 peak["hour"] = peak["hour"].astype(str) + ":00"
@@ -51,5 +53,30 @@ st.bar_chart(peak.set_index("hour")["usage_MB"])
 
 st.markdown("---")
 
+if view == "Daily":
+    st.subheader("Hourly Usage Heatmap")
+
+    day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+    heatmap_data = df.groupby(["day_name", "hour"])["usage_MB"].sum().reset_index()
+    heatmap_pivot = heatmap_data.pivot(index="day_name", columns="hour", values="usage_MB").reindex(day_order).fillna(0)
+
+    fig, ax = plt.subplots(figsize=(14, 4))
+    im = ax.imshow(heatmap_pivot.values, aspect="auto", cmap="Blues")
+
+    ax.set_xticks(range(len(heatmap_pivot.columns)))
+    ax.set_xticklabels([f"{h}:00" for h in heatmap_pivot.columns], rotation=45, ha="right", fontsize=8)
+    ax.set_yticks(range(len(day_order)))
+    ax.set_yticklabels(day_order, fontsize=9)
+    ax.set_xlabel("Hour")
+    ax.set_ylabel("Day")
+
+    plt.colorbar(im, ax=ax, label="MB")
+    plt.tight_layout()
+
+    st.pyplot(fig)
+
+    st.markdown("---")
+
 st.subheader("Detailed Data")
-st.dataframe(data, width="stretch")
+st.dataframe(data, use_container_width=True)
