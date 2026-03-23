@@ -22,6 +22,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Handles interface changes, counter rollovers, and disconnects gracefully
 - Streamlit dashboard with daily, weekly, and monthly summaries
 - Peak hour analysis and usage trend charts
+- Hourly usage heatmap
 
 ---
 
@@ -102,11 +103,11 @@ Run the Streamlit dashboard to visualize your usage data:
 streamlit run app.py
 ```
 
-Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly views from the sidebar.
+Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly views from the sidebar. The hourly heatmap is available in the daily view.
 
 ![Dashboard overview](screenshort/1.png)
 
-![Peak hours and detailed data](screenshort/2.png)
+![Peak hours and detailed data](screenshort/3.png)
 
 ---
 
@@ -172,7 +173,6 @@ Stop-Process -Name python -Force
 - [ ] Data cap alerts
 - [ ] Per-SSID tracking
 - [ ] Anomaly detection
-- [ ] Hourly heatmap
 - [ ] Enhanced visualizations
 - [ ] Task Scheduler integration
 - [ ] System tray icon
