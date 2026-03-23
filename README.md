@@ -148,19 +148,21 @@ Stop-Process -Name python -Force
 
 - Windows only — no Linux or macOS support
 - WiFi only — Ethernet and mobile hotspot not tracked
-- No per-app tracking — logs total usage only
+- No per-app tracking or per SSID tracking(total usage only)
 - Requires Python 3.11 specifically
 - Opening CSV in Excel while tracker runs may cause save failures
 
 ---
 
-## Roadmap
+## Future improvements
 
 - [ ] Data cap alerts
 - [ ] Per-SSID tracking
 - [ ] Anomaly detection
-- [ ] Usage heatmap (hour × day of week)
-- [ ] Task Scheduler support for more reliable startup on restrictive Windows configurations
-- [ ] Tray icon
+- [ ] Hour * heatmap
+- [ ] Enhanced visualizations
+- [ ] Task schedular intergration
+- [ ] System tray icon
+- [ ] Cross platform support
 
 ---
