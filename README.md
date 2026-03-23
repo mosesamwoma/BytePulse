@@ -72,6 +72,7 @@ WshShell.Run chr(34) & "C:\Users\YourName\BytePulse\start_tracker.bat" & chr(34)
 
 You should see:
 ```
+Starting WiFi tracker...
 [16:34:51] Tracker started (30-minute auto-save)
 [16:34:51] Connected: Wi-Fi
 ```
