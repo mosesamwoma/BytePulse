@@ -18,8 +18,19 @@ if exist data\tracker.lock (
     timeout /t 2 /nobreak >nul
 )
 
+if exist data\tray.lock (
+    for /f %%i in (data\tray.lock) do (
+        taskkill /F /PID %%i >nul 2>&1
+    )
+    del /f data\tray.lock >nul 2>&1
+    timeout /t 1 /nobreak >nul
+)
+
 wmic process where "name='python.exe' and commandline like '%%tracker%%'" delete >nul 2>&1
+wmic process where "name='pythonw.exe' and commandline like '%%tray%%'" delete >nul 2>&1
 timeout /t 1 /nobreak >nul
+
+start "" pythonw src\tray.py
 
 :loop
 echo Starting WiFi tracker...
