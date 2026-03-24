@@ -99,9 +99,6 @@ You should see `State: Ready`. Restart your PC and confirm it's running:
 Get-Process python
 Get-Process pythonw
 ```
-
-> 💡 If you prefer the Startup folder method instead, copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, update the path inside, and copy it to your Startup folder (`Win + R` → `shell:startup`). Note: Windows Defender may flag `.vbs` files on some systems.
-
 ---
 
 ## Dashboard
