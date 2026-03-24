@@ -7,9 +7,6 @@ data/*.log
 data/*.lock
 data/*.json
 *.pdf
-byt_v_env/run_hidden.example.vbs
-run_hidden.vbs
+byt_v_env/
 run_hidden.example.vbs
-run_hidden.vbs
-run_hidden.example.vbs
-run_hidden.vbs
+
