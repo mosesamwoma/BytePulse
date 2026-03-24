@@ -12,6 +12,7 @@ import json
 import tempfile
 import shutil
 import threading
+import msvcrt
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -35,26 +36,45 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
     logging.info(msg)
 
+# Global lock file handle — kept open for the lifetime of the process
+_lock_fh = None
+
 def acquire_lock():
-    if os.path.exists(LOCK_PATH):
+    global _lock_fh
+    try:
+        # Open (or create) the lock file
+        _lock_fh = open(LOCK_PATH, "w")
+        # Try to exclusively lock the first byte — this is atomic on Windows
+        msvcrt.locking(_lock_fh.fileno(), msvcrt.LK_NBLCK, 1)
+        # We own the lock — write our PID
+        _lock_fh.write(str(os.getpid()))
+        _lock_fh.flush()
+        log(f"Lock acquired (PID {os.getpid()})")
+    except OSError:
+        # Another process holds the lock
+        try:
+            _lock_fh.close()
+        except Exception:
+            pass
+        _lock_fh = None
+        # Read the PID from the lock file to log it
         try:
             with open(LOCK_PATH, "r") as f:
-                pid = int(f.read().strip())
-            if psutil.pid_exists(pid):
-                log(f"Tracker already running (PID {pid}). Exiting.")
-                sys.exit(0)
-            else:
-                log("Stale lock file found — removing.")
-                os.remove(LOCK_PATH)
+                pid = f.read().strip()
+            log(f"Tracker already running (PID {pid}). Exiting.")
         except Exception:
-            try:
-                os.remove(LOCK_PATH)
-            except Exception:
-                pass
-    with open(LOCK_PATH, "w") as f:
-        f.write(str(os.getpid()))
+            log("Tracker already running. Exiting.")
+        sys.exit(0)
 
 def release_lock():
+    global _lock_fh
+    if _lock_fh is not None:
+        try:
+            msvcrt.locking(_lock_fh.fileno(), msvcrt.LK_UNLCK, 1)
+            _lock_fh.close()
+        except Exception:
+            pass
+        _lock_fh = None
     try:
         if os.path.exists(LOCK_PATH):
             os.remove(LOCK_PATH)
