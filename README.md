@@ -1,4 +1,4 @@
-\# BytePulse
+# BytePulse
 
 > See exactly how your internet data is used — track every WiFi session, detect heavy usage, and visualize patterns locally with zero tracking
 
@@ -61,22 +61,31 @@ You should see exactly two `pythonw` processes (tracker + tray).
 
 ### 5. Run silently on startup
 
-BytePulse uses Windows Task Scheduler to launch the tray and tracker separately at login with no visible window. Run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual path:
+BytePulse uses Windows Task Scheduler to launch the tray and tracker separately at login with no visible window.
+
+First find your full path to `pythonw.exe`:
+```powershell
+(Get-Command pythonw).Source
+```
+It will return something like `C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe`. Copy that.
+
+Then run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual BytePulse path and `C:\Users\YourName\AppData\...\pythonw.exe` with the path you just copied:
 
 ```powershell
 $base = "C:\Users\YourName\BytePulse"
+$pythonw = "C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe"
 
 $trigger  = New-ScheduledTaskTrigger -AtLogOn
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
 
 Register-ScheduledTask -TaskName "BytePulse-Tray" `
-    -Action (New-ScheduledTaskAction -Execute "pythonw.exe" -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
+    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
     -Trigger $trigger -Settings $settings -RunLevel Highest -Force
 
 $triggerTracker = New-ScheduledTaskTrigger -AtLogOn
 $triggerTracker.Delay = "PT10S"
 Register-ScheduledTask -TaskName "BytePulse-Tracker" `
-    -Action (New-ScheduledTaskAction -Execute "pythonw.exe" -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
+    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
     -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
 ```
 
