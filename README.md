@@ -1,29 +1,14 @@
-# BytePulse
+\# BytePulse
 
 > See exactly how your internet data is used — track every WiFi session, detect heavy usage, and visualize patterns locally with zero tracking
+
+> Automatic WiFi tracking · Local CSV & JSON logging · Streamlit dashboard · System tray icon · Silent startup via Task Scheduler
 
 ---
 
 ## What It Does
 
 BytePulse runs silently in the background on Windows. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a CSV and JSON file at regular intervals — no cloud, no subscriptions, just clean local data.
-
----
-
-## Features
-
-- Automatic WiFi detection and session tracking
-- Logs bytes sent, received and total usage
-- Configurable save interval (default: 30 minutes)
-- Runs invisibly on Windows startup via Task Scheduler
-- Dual output — CSV and JSON, both ready for analysis, visualization, or aggregation
-- JSON atomic writes — no corruption on crash or forced shutdown
-- Duplicate instance prevention via atomic file lock
-- Handles interface changes, counter rollovers, and disconnects gracefully
-- Streamlit dashboard with daily, weekly, and monthly summaries
-- Peak hour analysis and usage trend charts
-- Hourly usage heatmap
-- System tray icon with status, dashboard launcher, and stop control
 
 ---
 
