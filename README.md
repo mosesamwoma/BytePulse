@@ -18,7 +18,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Runs invisibly on Windows startup via Task Scheduler
 - Dual output — CSV and JSON, both ready for analysis, visualization, or aggregation
 - JSON atomic writes — no corruption on crash or forced shutdown
-- Duplicate instance prevention via lock file
+- Duplicate instance prevention via atomic file lock
 - Handles interface changes, counter rollovers, and disconnects gracefully
 - Streamlit dashboard with daily, weekly, and monthly summaries
 - Peak hour analysis and usage trend charts
@@ -66,39 +66,50 @@ cd /d "C:\Users\YourName\BytePulse"
 .\start_tracker.bat
 ```
 
-You should see:
-```
-Starting WiFi tracker...
-[16:34:51] Tracker started (30-minute auto-save)
-[16:34:51] Connected: Wi-Fi
-```
-
 A BytePulse icon will appear in the system tray. Right-click it to open the dashboard, stop the tracker, or quit.
 
-After 30 minutes check `data/usage_log.csv` — a row should appear.
+After 30 minutes check `data/usage_log.csv` — a row should appear. You can also confirm it's running:
+```powershell
+Get-Process pythonw
+```
+You should see exactly two `pythonw` processes (tracker + tray).
 
 ### 5. Run silently on startup
 
-BytePulse uses Windows Task Scheduler to launch automatically at login. Run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual path:
+BytePulse uses Windows Task Scheduler to launch the tray and tracker separately at login with no visible window. Run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual path:
+
 ```powershell
-$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"C:\Users\YourName\BytePulse\start_tracker.bat`""
-$trigger = New-ScheduledTaskTrigger -AtLogOn
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0)
-Register-ScheduledTask -TaskName "BytePulse" -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force
+$base = "C:\Users\YourName\BytePulse"
+
+$trigger  = New-ScheduledTaskTrigger -AtLogOn
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
+
+Register-ScheduledTask -TaskName "BytePulse-Tray" `
+    -Action (New-ScheduledTaskAction -Execute "pythonw.exe" -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
+    -Trigger $trigger -Settings $settings -RunLevel Highest -Force
+
+$triggerTracker = New-ScheduledTaskTrigger -AtLogOn
+$triggerTracker.Delay = "PT10S"
+Register-ScheduledTask -TaskName "BytePulse-Tracker" `
+    -Action (New-ScheduledTaskAction -Execute "pythonw.exe" -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
+    -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
 ```
 
 > 💡 **To open PowerShell as Administrator:** press `Win + S`, type `powershell`, right-click **Windows PowerShell** → **Run as administrator**.
 
-To confirm it registered:
+To confirm both tasks registered:
 ```powershell
-Get-ScheduledTask -TaskName "BytePulse"
+Get-ScheduledTask -TaskName "BytePulse-Tracker"
+Get-ScheduledTask -TaskName "BytePulse-Tray"
 ```
 
-You should see `State: Ready`. Restart your PC and confirm it's running:
+Both should show `State: Ready`. Restart your PC and confirm they're running:
 ```powershell
-Get-Process python
 Get-Process pythonw
 ```
+
+You should see exactly two `pythonw` processes with no action required on your part.
+
 ---
 
 ## Dashboard
@@ -162,12 +173,13 @@ AUTO_SAVE_INTERVAL = 1800  # seconds between saves — 1800 = 30 min
 
 Right-click the system tray icon and select **Stop Tracker** or **Quit**, or run:
 ```powershell
-Stop-Process -Name python -Force
+Stop-Process -Name pythonw -Force
 ```
 
-To remove the Task Scheduler entry:
+To remove the Task Scheduler entries:
 ```powershell
-Unregister-ScheduledTask -TaskName "BytePulse" -Confirm:$false
+Unregister-ScheduledTask -TaskName "BytePulse-Tracker" -Confirm:$false
+Unregister-ScheduledTask -TaskName "BytePulse-Tray" -Confirm:$false
 ```
 
 ---
