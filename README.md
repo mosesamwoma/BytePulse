@@ -15,7 +15,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Automatic WiFi detection and session tracking
 - Logs bytes sent, received and total usage
 - Configurable save interval (default: 30 minutes)
-- Runs invisibly on Windows startup via Startup folder
+- Runs invisibly on Windows startup via Task Scheduler
 - Dual output — CSV and JSON, both ready for analysis, visualization, or aggregation
 - JSON atomic writes — no corruption on crash or forced shutdown
 - Duplicate instance prevention via lock file
@@ -23,6 +23,7 @@ BytePulse runs silently in the background on Windows. Every time you connect to 
 - Streamlit dashboard with daily, weekly, and monthly summaries
 - Peak hour analysis and usage trend charts
 - Hourly usage heatmap
+- System tray icon with status, dashboard launcher, and stop control
 
 ---
 
@@ -50,21 +51,15 @@ pip install -r requirements.txt
 ### 3. Set up launcher files
 
 - Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
-- Copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, do the same
 
 > 💡 **To find your path:** Open File Explorer, navigate to the BytePulse folder, click the address bar — it will show something like `C:\Users\YourName\BytePulse`. Copy that.
 
-In `start_tracker.bat`, the line to update looks like this:
+The line to update in `start_tracker.bat` looks like this:
 ```bat
 cd /d "C:\Users\YourName\BytePulse"
 ```
 
-In `run_hidden.vbs`, the line to update looks like this — only change the path in the middle, leave the `chr(34) &` parts exactly as they are:
-```vbs
-WshShell.Run chr(34) & "C:\Users\YourName\BytePulse\start_tracker.bat" & chr(34), 0
-```
-
-> 💡 To see file extensions while renaming: open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `.bat.bat` or `.vbs.vbs`.
+> 💡 To see file extensions while renaming: open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `.bat.bat`.
 
 ### 4. Run manually to test
 ```powershell
@@ -78,21 +73,34 @@ Starting WiFi tracker...
 [16:34:51] Connected: Wi-Fi
 ```
 
+A BytePulse icon will appear in the system tray. Right-click it to open the dashboard, stop the tracker, or quit.
+
 After 30 minutes check `data/usage_log.csv` — a row should appear.
 
 ### 5. Run silently on startup
 
-1. Press `Win + R`, type `shell:startup`, click OK
+BytePulse uses Windows Task Scheduler to launch automatically at login. Run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual path:
+```powershell
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"C:\Users\YourName\BytePulse\start_tracker.bat`""
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0)
+Register-ScheduledTask -TaskName "BytePulse" -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force
+```
 
-> 💡 **Win + R** — hold the Windows logo key and tap R. A small Run box appears at the bottom-left of your screen.
+> 💡 **To open PowerShell as Administrator:** press `Win + S`, type `powershell`, right-click **Windows PowerShell** → **Run as administrator**.
 
-2. Copy `run_hidden.vbs` into that folder
-3. Restart your PC
+To confirm it registered:
+```powershell
+Get-ScheduledTask -TaskName "BytePulse"
+```
 
-To confirm it's running after restart:
+You should see `State: Ready`. Restart your PC and confirm it's running:
 ```powershell
 Get-Process python
+Get-Process pythonw
 ```
+
+> 💡 If you prefer the Startup folder method instead, copy `run_hidden.example.vbs` → rename to `run_hidden.vbs`, update the path inside, and copy it to your Startup folder (`Win + R` → `shell:startup`). Note: Windows Defender may flag `.vbs` files on some systems.
 
 ---
 
@@ -102,6 +110,8 @@ Run the Streamlit dashboard to visualize your usage data:
 ```bash
 streamlit run app.py
 ```
+
+Or right-click the system tray icon and select **Open Dashboard** — it launches automatically.
 
 Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly views from the sidebar. The hourly heatmap is available in the daily view.
 
@@ -152,8 +162,15 @@ AUTO_SAVE_INTERVAL = 1800  # seconds between saves — 1800 = 30 min
 ---
 
 ## Stopping the Tracker
+
+Right-click the system tray icon and select **Stop Tracker** or **Quit**, or run:
 ```powershell
 Stop-Process -Name python -Force
+```
+
+To remove the Task Scheduler entry:
+```powershell
+Unregister-ScheduledTask -TaskName "BytePulse" -Confirm:$false
 ```
 
 ---
@@ -174,8 +191,6 @@ Stop-Process -Name python -Force
 - [ ] Per-SSID tracking
 - [ ] Anomaly detection
 - [ ] Enhanced visualizations
-- [ ] Task Scheduler integration
-- [ ] System tray icon
 - [ ] Cross-platform support
 
 ---
