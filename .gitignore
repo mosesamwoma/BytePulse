@@ -1,5 +1,5 @@
 start_tracker.bat
-run_hidden.vbs
+*.vbs
 __pycache__/
 *.pyc
 data/*.csv
@@ -8,5 +8,5 @@ data/*.lock
 data/*.json
 *.pdf
 byt_v_env/
-run_hidden.example.vbs
+
 
