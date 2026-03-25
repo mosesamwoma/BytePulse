@@ -2,7 +2,7 @@
 
 > See exactly how your internet data is used — track every WiFi session, detect heavy usage, and visualize patterns locally with zero tracking
 
-> Automatic WiFi tracking · Local CSV & JSON logging · Streamlit dashboard · System tray icon · Silent startup via Task Scheduler
+> Automatic WiFi tracking,Local CSV and  JSON logging,Streamlit dashboard,System tray icon and Silent startup via Task Scheduler
 
 ---
 
