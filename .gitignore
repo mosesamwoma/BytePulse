@@ -7,6 +7,9 @@ data/*.log
 data/*.lock
 data/*.json
 *.pdf
+weekly_summary.csv
+monthly_summary.csv
+daily_summary.csv
 byt_v_env/
 
 
