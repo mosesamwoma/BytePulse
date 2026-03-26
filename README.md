@@ -57,7 +57,7 @@ After 30 minutes check `data/usage_log.csv` — a row should appear. You can als
 ```powershell
 Get-Process pythonw
 ```
-You should see exactly two `pythonw` processes (tracker + tray).
+You should see exactly two `pythonw` processes (tracker and tray).
 
 ### 5. Run silently on startup
 
@@ -195,5 +195,10 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray" -Confirm:$false
 - [ ] Anomaly detection
 - [ ] Enhanced visualizations
 - [ ] Cross-platform support
+
+---
+
+## contributing
+Conributing are welcome! Please fork the repository and submit the a pull request
 
 ---
