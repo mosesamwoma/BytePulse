@@ -1,15 +1,17 @@
 start_tracker.bat
 *.vbs
+
 __pycache__/
 *.pyc
+
+byt_v_env/
+
 data/*.csv
+data/*.json
 data/*.log
 data/*.lock
-data/*.json
-*.pdf
 weekly_summary.csv
 monthly_summary.csv
 daily_summary.csv
-byt_v_env/
 
-
+*.pdf
