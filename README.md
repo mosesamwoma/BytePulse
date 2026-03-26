@@ -198,7 +198,8 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray" -Confirm:$false
 
 ---
 
-## contributing
-Conributing are welcome! Please fork the repository and submit the a pull request
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
 
 ---
