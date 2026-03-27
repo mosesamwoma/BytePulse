@@ -1,22 +1,45 @@
 # BytePulse
 
-> See exactly how your internet data is used — track every WiFi session, detect heavy usage, and visualize patterns locally with zero tracking
+**See exactly how your internet data is used — locally, silently, and privately.**
 
-> Automatic WiFi tracking,Local CSV and  JSON logging,Streamlit dashboard,System tray icon and Silent startup via Task Scheduler
+Track every WiFi session, detect heavy usage, and visualize patterns with zero cloud involvement.
 
 ---
 
-## What It Does
+## Overview
 
-BytePulse runs silently in the background on Windows. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a CSV and JSON file at regular intervals — no cloud, no subscriptions, just clean local data.
+BytePulse runs silently in the background. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV and JSON file at regular intervals.
+
+No cloud. No subscriptions. No tracking. Just clean local data that belongs to you.
+
+**What it tracks:**
+
+| Field | Description |
+|---|---|
+| `start_time` / `end_time` | Session timestamps |
+| `duration_minutes` | How long you were connected |
+| `bytes_sent` / `bytes_received` | Raw transfer counts |
+| `usage_MB` | Total data used per session |
+
+---
+
+## Features
+
+- **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
+- **Dual-format logging** — every session saved to both CSV and JSON simultaneously
+- **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
+- **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
+- **System tray icon** — right-click to open dashboard, stop tracker, or quit
+- **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
 
 ---
 
 ## Requirements
-- Windows 10/11
+
+- Windows 10 or 11
 - [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
 
-> ⚠️ **Important:** `psutil` has known compatibility issues with Python versions above 3.11. Use Python 3.11 specifically to avoid installation or runtime errors.
+> ⚠️ `psutil` has known compatibility issues with Python versions above 3.11. Use **Python 3.11 specifically** to avoid installation or runtime errors.
 
 ---
 
@@ -33,47 +56,48 @@ cd BytePulse
 pip install -r requirements.txt
 ```
 
-### 3. Set up launcher files
+### 3. Configure the launcher
 
-- Copy `start_tracker.example.bat` → rename to `start_tracker.bat`, open in Notepad and replace `C:\path\to\BytePulse` with your actual folder path
-
-> 💡 **To find your path:** Open File Explorer, navigate to the BytePulse folder, click the address bar — it will show something like `C:\Users\YourName\BytePulse`. Copy that.
-
-The line to update in `start_tracker.bat` looks like this:
+Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the placeholder path with your actual BytePulse folder path:
 ```bat
 cd /d "C:\Users\YourName\BytePulse"
 ```
 
-> 💡 To see file extensions while renaming: open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `.bat.bat`.
+> 💡 **Finding your path:** Open File Explorer, navigate to the BytePulse folder, and click the address bar — it shows the full path (e.g. `C:\Users\YourName\BytePulse`).
+
+> 💡 **Seeing file extensions:** Open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `start_tracker.bat.bat`.
 
 ### 4. Run manually to test
 ```powershell
 .\start_tracker.bat
 ```
 
-A BytePulse icon will appear in the system tray. Right-click it to open the dashboard, stop the tracker, or quit.
+A BytePulse icon appears in the system tray. Right-click to open the dashboard, stop the tracker, or quit.
 
-After 30 minutes check `data/usage_log.csv` — a row should appear. You can also confirm it's running:
+After 30 minutes, check `data/usage_log.csv` — a row should appear. Confirm the tracker is running:
 ```powershell
 Get-Process pythonw
 ```
-You should see exactly two `pythonw` processes (tracker and tray).
 
-### 5. Run silently on startup
+You should see exactly **two** `pythonw` processes (tracker + tray).
 
-BytePulse uses Windows Task Scheduler to launch the tray and tracker separately at login with no visible window.
+### 5. Enable silent startup
 
-First find your full path to `pythonw.exe`:
+BytePulse uses Windows Task Scheduler to launch at login with no visible window.
+
+**Step 1 — Get your paths.** Run this in PowerShell:
 ```powershell
 (Get-Command pythonw).Source
 ```
-It will return something like `C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe`. Copy that.
 
-Then run this in PowerShell as Administrator — replace `C:\Users\YourName\BytePulse` with your actual BytePulse path and `C:\Users\YourName\AppData\...\pythonw.exe` with the path you just copied:
+This gives you your `pythonw.exe` path. Your BytePulse folder path you already know (it's where you cloned the repo).
 
+**Step 2 — Register the tasks.** Open **PowerShell as Administrator** (`Win + S` → `powershell` → right-click → **Run as administrator**) and paste this, replacing the two variables at the top:
 ```powershell
-$base = "C:\Users\YourName\BytePulse"
-$pythonw = "C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe"
+# ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
+$base    = "C:\Users\YourName\BytePulse"                                            # ← your BytePulse folder
+$pythonw = "C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe"  # ← from step 1
+# ─────────────────────────────────────────────────────────────────────────────
 
 $trigger  = New-ScheduledTaskTrigger -AtLogOn
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
@@ -82,40 +106,31 @@ Register-ScheduledTask -TaskName "BytePulse-Tray" `
     -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
     -Trigger $trigger -Settings $settings -RunLevel Highest -Force
 
-$triggerTracker = New-ScheduledTaskTrigger -AtLogOn
+$triggerTracker       = New-ScheduledTaskTrigger -AtLogOn
 $triggerTracker.Delay = "PT10S"
 Register-ScheduledTask -TaskName "BytePulse-Tracker" `
     -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
     -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
 ```
 
-> 💡 **To open PowerShell as Administrator:** press `Win + S`, type `powershell`, right-click **Windows PowerShell** → **Run as administrator**.
-
-To confirm both tasks registered:
+Confirm both registered:
 ```powershell
 Get-ScheduledTask -TaskName "BytePulse-Tracker"
 Get-ScheduledTask -TaskName "BytePulse-Tray"
 ```
 
-Both should show `State: Ready`. Restart your PC and confirm they're running:
-```powershell
-Get-Process pythonw
-```
-
-You should see exactly two `pythonw` processes with no action required on your part.
+Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
 
 ---
 
 ## Dashboard
-
-Run the Streamlit dashboard to visualize your usage data:
 ```bash
 streamlit run app.py
 ```
 
-Or right-click the system tray icon and select **Open Dashboard** — it launches automatically.
+Or right-click the system tray icon → **Open Dashboard**. Opens at `http://localhost:8501`.
 
-Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly views from the sidebar. The hourly heatmap is available in the daily view.
+Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap** is available in the daily view.
 
 ![Dashboard overview](screenshort/1.png)
 
@@ -125,15 +140,15 @@ Opens at `http://localhost:8501`. Switch between daily, weekly, and monthly view
 
 ## Output Files
 
-Both files are saved in the `data/` folder and stay in sync — if one write fails, the other preserves the data.
+Both files live in `data/` and stay in sync — if one write fails, the other preserves the data.
 
-### CSV — `data/usage_log.csv`
+### `data/usage_log.csv`
 
 | start_time | end_time | duration_minutes | bytes_sent | bytes_received | total_bytes | usage_MB |
 |---|---|---|---|---|---|---|
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
 
-### JSON — `data/usage_log.json`
+### `data/usage_log.json`
 ```json
 [
   {
@@ -156,50 +171,58 @@ Both files are saved in the `data/` folder and stay in sync — if one write fai
 ---
 
 ## Configuration
+
+Edit these constants in `src/tracker.py`:
 ```python
-POLL_INTERVAL = 5          # seconds between WiFi checks
-AUTO_SAVE_INTERVAL = 1800  # seconds between saves — 1800 = 30 min
+POLL_INTERVAL      = 5     # seconds between WiFi checks
+AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
 ```
 
 ---
 
 ## Stopping the Tracker
 
-Right-click the system tray icon and select **Stop Tracker** or **Quit**, or run:
+Right-click the system tray icon → **Stop Tracker** or **Quit**.
+
+Or force-stop from PowerShell:
 ```powershell
 Stop-Process -Name pythonw -Force
 ```
 
-To remove the Task Scheduler entries:
+To remove the Task Scheduler entries entirely:
 ```powershell
 Unregister-ScheduledTask -TaskName "BytePulse-Tracker" -Confirm:$false
-Unregister-ScheduledTask -TaskName "BytePulse-Tray" -Confirm:$false
+Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 ```
 
 ---
 
 ## Limitations
 
-- Windows only — no Linux or macOS support
-- WiFi only — Ethernet and mobile hotspot not tracked
-- No per-app tracking or per-SSID tracking (total usage only)
+- Windows 10/11 only
+- WiFi only — Ethernet and mobile hotspot sessions are not tracked
+- Total usage only — no per-app or per-SSID breakdown
 - Requires Python 3.11 specifically
-- Opening CSV in Excel while tracker runs may cause save failures
+- Opening `usage_log.csv` in Excel while the tracker runs may cause save failures
 
 ---
 
-## Future improvements
+## Roadmap
 
-- [ ] Data cap alerts
+- [ ] Data cap alerts with Windows toast notifications
 - [ ] Per-SSID tracking
-- [ ] Anomaly detection
+- [ ] Anomaly detection (Z-score + Isolation Forest)
 - [ ] Enhanced visualizations
-- [ ] Cross-platform support
+- [ ] Cross-platform support (Linux / macOS)
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+Contributions are welcome. Fork the repo and open a pull request.
 
 ---
+
+<div align="center">
+<sub>Built for Windows · No cloud · No telemetry · Your data stays yours</sub>
+</div>
