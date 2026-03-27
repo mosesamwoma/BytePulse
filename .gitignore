@@ -1,16 +1,11 @@
 start_tracker.bat
 *.vbs
-
 __pycache__/
 *.pyc
-
 byt_v_env/
-
 data/*
 !data/.gitkeep
-
 weekly_summary.csv
 monthly_summary.csv
 daily_summary.csv
-
 *.pdf
