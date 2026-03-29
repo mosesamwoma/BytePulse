@@ -2,6 +2,7 @@ import pystray
 import subprocess
 import os
 import sys
+import psutil
 from PIL import Image, ImageDraw
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,16 +15,20 @@ def acquire_tray_lock():
         try:
             with open(TRAY_LOCK, "r") as f:
                 pid = int(f.read().strip())
-            import psutil
             if psutil.pid_exists(pid):
-                sys.exit(0)
-            else:
-                os.remove(TRAY_LOCK)
+                try:
+                    proc = psutil.Process(pid)
+                    if "python" in proc.name().lower() and proc.status() != psutil.STATUS_ZOMBIE:
+                        sys.exit(0)
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
         except Exception:
-            try:
-                os.remove(TRAY_LOCK)
-            except Exception:
-                pass
+            pass
+        try:
+            os.remove(TRAY_LOCK)
+        except Exception:
+            pass
+
     with open(TRAY_LOCK, "w") as f:
         f.write(str(os.getpid()))
 
@@ -31,13 +36,23 @@ def acquire_tray_lock():
 def release_tray_lock():
     try:
         if os.path.exists(TRAY_LOCK):
-            os.remove(TRAY_LOCK)
+            with open(TRAY_LOCK, "r") as f:
+                pid = int(f.read().strip())
+            if pid == os.getpid():
+                os.remove(TRAY_LOCK)
     except Exception:
         pass
 
 
 def is_tracker_running():
-    return os.path.exists(LOCK_PATH)
+    if not os.path.exists(LOCK_PATH):
+        return False
+    try:
+        with open(LOCK_PATH, "r") as f:
+            pid = int(f.read().strip())
+        return psutil.pid_exists(pid)
+    except Exception:
+        return False
 
 
 def create_icon():
@@ -73,8 +88,10 @@ def stop_tracker(icon, item):
         if os.path.exists(LOCK_PATH):
             with open(LOCK_PATH, "r") as f:
                 pid = int(f.read().strip())
-            os.kill(pid, 9)
-    except Exception:
+            proc = psutil.Process(pid)
+            proc.terminate()
+            proc.wait(timeout=5)
+    except (psutil.NoSuchProcess, psutil.TimeoutExpired, Exception):
         pass
 
 

@@ -13,6 +13,7 @@ import tempfile
 import shutil
 import threading
 import msvcrt
+from api.database import init_db, save_to_db
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -36,28 +37,22 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
     logging.info(msg)
 
-# Global lock file handle — kept open for the lifetime of the process
 _lock_fh = None
 
 def acquire_lock():
     global _lock_fh
     try:
-        # Open (or create) the lock file
         _lock_fh = open(LOCK_PATH, "w")
-        # Try to exclusively lock the first byte — this is atomic on Windows
         msvcrt.locking(_lock_fh.fileno(), msvcrt.LK_NBLCK, 1)
-        # We own the lock — write our PID
         _lock_fh.write(str(os.getpid()))
         _lock_fh.flush()
         log(f"Lock acquired (PID {os.getpid()})")
     except OSError:
-        # Another process holds the lock
         try:
             _lock_fh.close()
         except Exception:
             pass
         _lock_fh = None
-        # Read the PID from the lock file to log it
         try:
             with open(LOCK_PATH, "r") as f:
                 pid = f.read().strip()
@@ -273,16 +268,19 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
             log(f"Pending CSV write also failed: {e}")
 
     json_ok = atomic_json_append(JSON_PATH, record)
+    db_ok   = save_to_db(record)
 
     if csv_ok:
         log(f"Saved: {mb_used:.4f} MB in {duration:.2f} mins")
-    if not csv_ok and not json_ok:
-        log("CRITICAL: Both CSV and JSON saves failed. Data lost for this session.")
+    if not csv_ok and not json_ok and not db_ok:
+        log("CRITICAL: CSV, JSON and DB saves all failed. Data lost for this session.")
         return False
     if not csv_ok:
-        log("CSV failed — data preserved in JSON.")
+        log("CSV failed — data preserved in JSON/DB.")
     if not json_ok:
-        log("JSON failed — data preserved in CSV.")
+        log("JSON failed — data preserved in CSV/DB.")
+    if not db_ok:
+        log("DB failed — data preserved in CSV/JSON.")
 
     return True
 
@@ -326,6 +324,7 @@ def track_usage():
     acquire_lock()
     initialize_csv()
     initialize_json()
+    init_db()
     merge_pending_csv()
 
     log("Tracker started (30-minute auto-save)")

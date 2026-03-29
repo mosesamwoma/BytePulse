@@ -4,3 +4,5 @@ matplotlib==3.9.2
 streamlit==1.39.0
 pystray==0.19.5
 Pillow==10.4.0
+fastapi
+uvicorn
