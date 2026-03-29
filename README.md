@@ -31,6 +31,8 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 - **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
 - **System tray icon** — right-click to open dashboard, stop tracker, or quit
 - **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
+- **Anomaly detection** — flags sessions with unusually high usage via Z-score
+- **Data cap alerts** — Windows toast notifications at 80% and 100% of your cap
 - **REST API** — query your usage data as JSON via FastAPI
 
 ---
@@ -122,6 +124,13 @@ Get-ScheduledTask -TaskName "BytePulse-Tray"
 
 Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
 
+### 6. Migrate existing data to SQLite
+
+If you have existing CSV data, run this once to sync it to the database:
+```bash
+python -m scripts.migrate_csv_to_db
+```
+
 ---
 
 ## Dashboard
@@ -133,9 +142,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap** is available in the daily view.
 
-![Dashboard overview](screenshort/1.png)
+![Dashboard overview](screenshots/1.png)
 
-![Peak hours and detailed data](screenshort/3.png)
+![Peak hours and detailed data](screenshots/3.png)
 
 ---
 
@@ -155,6 +164,23 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/daily` | Daily summaries |
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
+
+---
+
+## Configuration
+
+Edit these constants in `src/tracker.py`:
+```python
+POLL_INTERVAL      = 5     # seconds between WiFi checks
+AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
+```
+
+Edit these constants in `src/alerts.py`:
+```python
+CAP_MB         = 6144   # your monthly data cap in MB (6144 = 6GB)
+BILLING_DAY    = 1      # day of month your billing cycle resets
+WARN_THRESHOLD = 0.8    # alert at 80% usage
+```
 
 ---
 
@@ -194,16 +220,6 @@ SQLite database with a `sessions` table — queryable via the API or any SQLite 
 
 ---
 
-## Configuration
-
-Edit these constants in `src/tracker.py`:
-```python
-POLL_INTERVAL      = 5     # seconds between WiFi checks
-AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
-```
-
----
-
 ## Stopping the Tracker
 
 Right-click the system tray icon → **Stop Tracker** or **Quit**.
@@ -228,13 +244,6 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - Total usage only — no per-app or per-SSID breakdown
 - Requires Python 3.11 specifically
 - Opening `usage_log.csv` in Excel while the tracker runs may cause save failures
-
----
-
-## Roadmap
-
-- [ ] Data cap alerts
-- [ ] Anomaly detection — flag sessions with unusually high usage
 
 ---
 
