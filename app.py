@@ -5,7 +5,7 @@ from src.analyzer import load_data, summarize
 from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
-st.title("BytePulse Dashboard")
+st.title("Main BytePulse Dashboard")
 
 @st.cache_data
 def load_cached():
