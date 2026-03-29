@@ -234,9 +234,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 ## Roadmap
 
 - [ ] Data cap alerts
-- [ ] Per-SSID usage breakdown
 - [ ] Anomaly detection — flag sessions with unusually high usage
-- [ ] ISP billing cycle alignment
 
 ---
 
