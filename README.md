@@ -214,23 +214,29 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - [ ] Anomaly detection (Z-score + Isolation Forest)
 - [ ] Enhanced visualizations
 - [ ] Cross-platform support (Linux / macOS)
+- [ ] ISP billing cycle alignment
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Fork the repo and open a pull request.
+1. Fork the repo and clone it
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Make your changes and commit: `git commit -m "describe change"`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request targeting `main` on `mosesamwoma/BytePulse`
 
 ---
+
 ## ⭐ Support This Project
 
 If you found this project helpful, consider giving it a star!
 
-- ⭐ Star this repository  
-- 🍴 Fork it to contribute  
-- 🛠️ Open issues or suggest features  
+- ⭐ Star this repository
+- 🍴 Fork it to contribute
+- 🛠️ Open issues or suggest features
 
-Thanks for your support! 
+Thanks for your support!
 
 ---
 
