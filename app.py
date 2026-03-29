@@ -5,7 +5,7 @@ from src.analyzer import load_data, summarize
 from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
-st.title("Main BytePulse Dashboard")
+st.title("BytePulse Dashboard")
 
 @st.cache_data
 def load_cached():
@@ -85,4 +85,7 @@ if view == "Daily":
     st.markdown("---")
 
 st.subheader("Detailed Data")
-st.dataframe(data, use_container_width=True)
+if view == "Daily":
+    st.dataframe(data.tail(20), use_container_width=True)
+else:
+    st.dataframe(data, use_container_width=True)
