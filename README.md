@@ -122,13 +122,6 @@ Get-ScheduledTask -TaskName "BytePulse-Tray"
 
 Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
 
-### 6. Migrate existing data to SQLite
-
-If you have existing CSV data, run this once to sync it to the database:
-```bash
-python -m scripts.migrate_csv_to_db
-```
-
 ---
 
 ## Dashboard
