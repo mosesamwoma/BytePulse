@@ -142,9 +142,10 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap** is available in the daily view.
 
-![Dashboard overview](screenshots/1.png)
-
-![Peak hours and detailed data](screenshots/3.png)
+---
+![Dashboard overview](screenshort/1.png)
+---
+![Peak hours and detailed data](screenshort/3.png)
 
 ---
 
@@ -164,6 +165,10 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/daily` | Daily summaries |
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
+
+## API interfence
+
+![API interface](screenshort\5.png)
 
 ---
 
