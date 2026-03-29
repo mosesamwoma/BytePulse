@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
 
 st.set_page_config(page_title="BytePulse", layout="wide")
-st.title("BytePulse Dashboard")
+st.title("Main BytePulse Dashboard")
 
 @st.cache_data
 def load_cached():
