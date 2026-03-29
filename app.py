@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
+from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
 st.title("BytePulse Dashboard")
@@ -28,12 +29,17 @@ else:
 
 data = data.reset_index(drop=True)
 
+today = date.today()
+today_df = df[df["start_time"].dt.date == today]
+today_usage = round(today_df["usage_MB"].sum(), 2)
+
 st.subheader("Totals")
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Total Data (MB)", round(data["total_MB"].sum(), 2))
 c2.metric("Total Sessions", int(data["sessions"].sum()))
 c3.metric("Total Duration (min)", int(data["total_duration"].sum()))
 c4.metric("Peak Usage (MB)", round(data["total_MB"].max(), 2))
+c5.metric("Today's Usage (MB)", today_usage)
 
 st.markdown("---")
 
