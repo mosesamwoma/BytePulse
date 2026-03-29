@@ -168,7 +168,7 @@ Opens at `http://localhost:8000/docs`.
 
 ## API interfence
 
-![API interface](screenshort\5.png)
+![API interface](screenshort/5.png)
 
 ---
 
