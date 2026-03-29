@@ -148,9 +148,6 @@ Switch between **daily**, **weekly**, and **monthly** views from the sidebar. Th
 ![Peak hours and detailed data](screenshort/3.png)
 
 ---
-![Peak hours and detailed data](screenshort/5.png)
-
----
 
 ## API
 
@@ -168,6 +165,10 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/daily` | Daily summaries |
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
+
+## API interfence
+
+![API interface](screenshort\5.png)
 
 ---
 
