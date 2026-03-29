@@ -224,5 +224,5 @@ Contributions are welcome. Fork the repo and open a pull request.
 ---
 
 <div align="center">
-<sub>Built for Windows · No cloud · No telemetry · Your data stays yours</sub>
+<sub>Built for Windows · No cloud · Your data stays yours</sub>
 </div>
