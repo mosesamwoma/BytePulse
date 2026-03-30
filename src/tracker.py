@@ -14,6 +14,8 @@ import shutil
 import threading
 import msvcrt
 from api.database import init_db, save_to_db
+from src.anomaly import detect_anomalies
+from src.alerts import check_alerts
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -282,6 +284,11 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
     if not db_ok:
         log("DB failed — data preserved in CSV/JSON.")
 
+    try:
+        check_alerts()
+    except Exception:
+        pass
+
     return True
 
 _state = {}
@@ -328,6 +335,13 @@ def track_usage():
     merge_pending_csv()
 
     log("Tracker started (30-minute auto-save)")
+
+    try:
+        anomalies = detect_anomalies()
+        if not anomalies.empty:
+            log(f"Anomalies detected: {len(anomalies)} sessions flagged.")
+    except Exception:
+        pass
 
     atexit.register(do_shutdown_save)
     atexit.register(release_lock)
