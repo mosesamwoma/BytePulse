@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
 from src.anomaly import detect_anomalies
 from src.alerts import get_cycle_usage, CAP_MB, WARN_THRESHOLD
+from src.forecaster import forecast
 from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
@@ -91,6 +92,16 @@ if view == "Daily":
     plt.tight_layout()
 
     st.pyplot(fig)
+
+    st.markdown("---")
+
+    st.subheader("7-Day Usage Forecast")
+    forecast_df, _ = forecast(days=7)
+    if forecast_df is None:
+        st.info("Not enough data to forecast.")
+    else:
+        st.line_chart(forecast_df.set_index("date")["predicted_MB"])
+        st.dataframe(forecast_df, use_container_width=True)
 
     st.markdown("---")
 
