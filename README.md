@@ -143,9 +143,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are available in the daily view.
 
-![Dashboard overview](screenshots/1.png)
+![Dashboard overview](screenshort/1.png)
 
-![Peak hours and detailed data](screenshots/3.png)
+![Peak hours and detailed data](screenshort/3.png)
 
 ---
 
@@ -189,7 +189,7 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
 
-![API interface](screenshots/5.png)
+![API interface](screenshort/5.png)
 
 ---
 
