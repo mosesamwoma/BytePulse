@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
+from src.anomaly import detect_anomalies
+from src.alerts import get_cycle_usage, CAP_MB, WARN_THRESHOLD
 from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
@@ -40,6 +42,15 @@ c2.metric("Total Sessions", int(data["sessions"].sum()))
 c3.metric("Total Duration (min)", int(data["total_duration"].sum()))
 c4.metric("Peak Usage (MB)", round(data["total_MB"].max(), 2))
 c5.metric("Today's Usage (MB)", today_usage)
+
+st.markdown("---")
+
+st.subheader("Data Cap")
+cycle_usage = get_cycle_usage()
+usage_pct   = min(cycle_usage / CAP_MB, 1.0)
+cap_color   = "normal" if usage_pct < WARN_THRESHOLD else ("inverse" if usage_pct < 1.0 else "off")
+st.metric("Cycle Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
+st.progress(usage_pct)
 
 st.markdown("---")
 
@@ -83,6 +94,16 @@ if view == "Daily":
     st.pyplot(fig)
 
     st.markdown("---")
+
+st.subheader("Anomaly Detection")
+anomalies = detect_anomalies()
+if anomalies.empty:
+    st.success("No anomalous sessions detected.")
+else:
+    st.warning(f"{len(anomalies)} anomalous sessions detected.")
+    st.dataframe(anomalies, use_container_width=True)
+
+st.markdown("---")
 
 st.subheader("Detailed Data")
 if view == "Daily":
