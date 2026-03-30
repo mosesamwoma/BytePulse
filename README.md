@@ -32,7 +32,8 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 - **System tray icon** — right-click to open dashboard, stop tracker, or quit
 - **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
 - **Anomaly detection** — flags sessions with unusually high usage via Z-score
-- **Data cap alerts** — Windows toast notifications at 80% and 100% of your cap
+- **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
+- **7-day usage forecast** — Prophet-powered time series forecasting
 - **REST API** — query your usage data as JSON via FastAPI
 
 ---
@@ -140,12 +141,34 @@ streamlit run app.py
 
 Or right-click the system tray icon → **Open Dashboard**. Opens at `http://localhost:8501`.
 
-Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap** is available in the daily view.
+Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are available in the daily view.
+
+![Dashboard overview](screenshots/1.png)
+
+![Peak hours and detailed data](screenshots/3.png)
 
 ---
-![Dashboard overview](screenshort/1.png)
----
-![Peak hours and detailed data](screenshort/3.png)
+
+## ML — 7-Day Usage Forecast
+
+BytePulse uses **Prophet** (Meta's time series forecasting library) to predict your WiFi usage for the next 7 days based on your historical session data.
+
+**How it works:**
+- Aggregates your session data into daily totals
+- Fits a Prophet model with weekly seasonality
+- Predicts `usage_MB` for the next 7 days with upper and lower confidence bounds
+
+**What you get:**
+- A line chart showing predicted daily usage
+- A table with `predicted_MB`, `lower_MB`, and `upper_MB` per day
+- Visible in the dashboard under the **Daily** view
+
+**Why it's useful:**
+- See which days of the week you consistently use more data
+- Get early warning before hitting your daily cap
+- Understand your usage patterns over time
+
+The model retrains automatically every time the dashboard loads — no manual steps needed.
 
 ---
 
@@ -166,9 +189,7 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
 
-## API interfence
-
-![API interface](screenshort/5.png)
+![API interface](screenshots/5.png)
 
 ---
 
@@ -182,9 +203,8 @@ AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
 
 Edit these constants in `src/alerts.py`:
 ```python
-CAP_MB         = 6144   # your monthly data cap in MB (6144 = 6GB)
-BILLING_DAY    = 1      # day of month your billing cycle resets
-WARN_THRESHOLD = 0.8    # alert at 80% usage
+CAP_MB         = 6144  # daily data cap in MB (6144 = 6GB)
+WARN_THRESHOLD = 0.8   # alert at 80% usage
 ```
 
 ---
@@ -268,7 +288,7 @@ If you found this project helpful, consider giving it a star!
 
 - ⭐ Star this repository
 - 🍴 Fork it to contribute
-- 🛠️ Open issues or suggest features
+- 🛠️I Open issues or suggest features
 
 Thanks for your support!
 
