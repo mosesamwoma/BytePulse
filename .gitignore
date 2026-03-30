@@ -9,3 +9,4 @@ weekly_summary.csv
 monthly_summary.csv
 daily_summary.csv
 *.pdf
+*.db

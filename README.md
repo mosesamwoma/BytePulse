@@ -8,7 +8,7 @@ Track every WiFi session, detect heavy usage, and visualize patterns with zero c
 
 ## Overview
 
-BytePulse runs silently in the background. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV and JSON file at regular intervals.
+BytePulse runs silently in the background. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV, JSON, and SQLite database at regular intervals.
 
 No cloud. No subscriptions. No tracking. Just clean local data that belongs to you.
 
@@ -26,11 +26,14 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 ## Features
 
 - **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
-- **Dual-format logging** — every session saved to both CSV and JSON simultaneously
+- **Triple-format logging** — every session saved to CSV, JSON, and SQLite simultaneously
 - **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
 - **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
 - **System tray icon** — right-click to open dashboard, stop tracker, or quit
 - **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
+- **Anomaly detection** — flags sessions with unusually high usage via Z-score
+- **Data cap alerts** — Windows toast notifications at 80% and 100% of your cap
+- **REST API** — query your usage data as JSON via FastAPI
 
 ---
 
@@ -109,7 +112,7 @@ Register-ScheduledTask -TaskName "BytePulse-Tray" `
 $triggerTracker       = New-ScheduledTaskTrigger -AtLogOn
 $triggerTracker.Delay = "PT10S"
 Register-ScheduledTask -TaskName "BytePulse-Tracker" `
-    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
+    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "-m src.tracker" -WorkingDirectory $base) `
     -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
 ```
 
@@ -120,6 +123,13 @@ Get-ScheduledTask -TaskName "BytePulse-Tray"
 ```
 
 Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
+
+### 6. Migrate existing data to SQLite
+
+If you have existing CSV data, run this once to sync it to the database:
+```bash
+python -m scripts.migrate_csv_to_db
+```
 
 ---
 
@@ -132,15 +142,56 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap** is available in the daily view.
 
+---
 ![Dashboard overview](screenshort/1.png)
-
+---
 ![Peak hours and detailed data](screenshort/3.png)
+
+---
+
+## API
+
+BytePulse includes a FastAPI-powered REST API that serves your usage data as JSON.
+```bash
+uvicorn api.main:app --reload
+```
+
+Opens at `http://localhost:8000/docs`.
+
+| Endpoint | Description |
+|---|---|
+| `GET /sessions` | All sessions |
+| `GET /sessions/today` | Today's sessions |
+| `GET /sessions/daily` | Daily summaries |
+| `GET /sessions/weekly` | Weekly summaries |
+| `GET /sessions/monthly` | Monthly summaries |
+
+## API interfence
+
+![API interface](screenshort/5.png)
+
+---
+
+## Configuration
+
+Edit these constants in `src/tracker.py`:
+```python
+POLL_INTERVAL      = 5     # seconds between WiFi checks
+AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
+```
+
+Edit these constants in `src/alerts.py`:
+```python
+CAP_MB         = 6144   # your monthly data cap in MB (6144 = 6GB)
+BILLING_DAY    = 1      # day of month your billing cycle resets
+WARN_THRESHOLD = 0.8    # alert at 80% usage
+```
 
 ---
 
 ## Output Files
 
-Both files live in `data/` and stay in sync — if one write fails, the other preserves the data.
+All three files live in `data/` and stay in sync — if one write fails, the others preserve the data.
 
 ### `data/usage_log.csv`
 
@@ -163,20 +214,14 @@ Both files live in `data/` and stay in sync — if one write fails, the other pr
 ]
 ```
 
+### `data/bytepulse.db`
+
+SQLite database with a `sessions` table — queryable via the API or any SQLite client.
+
 > ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy the file first:
 > ```powershell
 > copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
 > ```
-
----
-
-## Configuration
-
-Edit these constants in `src/tracker.py`:
-```python
-POLL_INTERVAL      = 5     # seconds between WiFi checks
-AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
-```
 
 ---
 
@@ -207,22 +252,30 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ---
 
-## Roadmap
+## Contributing
 
-- [ ] Data cap alerts with Windows toast notifications
-- [ ] Per-SSID tracking
-- [ ] Anomaly detection (Z-score + Isolation Forest)
-- [ ] Enhanced visualizations
-- [ ] Cross-platform support (Linux / macOS)
+1. Fork the repo and clone it
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Make your changes and commit: `git commit -m "describe change"`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request targeting `main` on `mosesamwoma/BytePulse`
 
 ---
 
-## Contributing
+## ⭐ Support This Project
 
-Contributions are welcome. Fork the repo and open a pull request.
+If you found this project helpful, consider giving it a star!
+
+- ⭐ Star this repository
+- 🍴 Fork it to contribute
+- 🛠️ Open issues or suggest features
+
+Thanks for your support!
 
 ---
 
 <div align="center">
-<sub>Built for Windows · No cloud · No telemetry · Your data stays yours</sub>
+<sub>Built for Windows · No cloud · Your data stays yours</sub>
 </div>
+
+---
