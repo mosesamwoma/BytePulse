@@ -45,14 +45,13 @@ c5.metric("Today's Usage (MB)", today_usage)
 
 st.markdown("---")
 
-st.subheader("Data Cap")
-cycle_usage = get_cycle_usage()
-usage_pct   = min(cycle_usage / CAP_MB, 1.0)
-cap_color   = "normal" if usage_pct < WARN_THRESHOLD else ("inverse" if usage_pct < 1.0 else "off")
-st.metric("Cycle Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
-st.progress(usage_pct)
-
-st.markdown("---")
+if view == "Daily":
+    st.subheader("Data Cap")
+    cycle_usage = get_cycle_usage()
+    usage_pct   = min(cycle_usage / CAP_MB, 1.0)
+    st.metric("Daily Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
+    st.progress(usage_pct)
+    st.markdown("---")
 
 st.subheader("Data Usage Over Time (MB)")
 st.line_chart(data.set_index(x)["total_MB"])
@@ -95,15 +94,15 @@ if view == "Daily":
 
     st.markdown("---")
 
-st.subheader("Anomaly Detection")
-anomalies = detect_anomalies()
-if anomalies.empty:
-    st.success("No anomalous sessions detected.")
-else:
-    st.warning(f"{len(anomalies)} anomalous sessions detected.")
-    st.dataframe(anomalies, use_container_width=True)
+    st.subheader("Anomaly Detection")
+    anomalies = detect_anomalies()
+    if anomalies.empty:
+        st.success("No anomalous sessions detected.")
+    else:
+        st.warning(f"{len(anomalies)} anomalous sessions detected.")
+        st.dataframe(anomalies, use_container_width=True)
 
-st.markdown("---")
+    st.markdown("---")
 
 st.subheader("Detailed Data")
 if view == "Daily":
