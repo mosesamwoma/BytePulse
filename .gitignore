@@ -5,8 +5,9 @@ __pycache__/
 byt_v_env/
 data/*
 !data/.gitkeep
-weekly_summary.csv
-monthly_summary.csv
-daily_summary.csv
+*.csv
+*.log
+*.lock
+*.json
 *.pdf
 *.db
