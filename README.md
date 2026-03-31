@@ -282,13 +282,13 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ---
 
-## ⭐ Support This Project
+##  Support This Project
 
 If you found this project helpful, consider giving it a star!
 
-- ⭐ Star this repository
-- 🍴 Fork it to contribute
-- 🛠️I Open issues or suggest features
+-  Star this repository
+-  Fork it to contribute
+-  Open issues or suggest features
 
 Thanks for your support!
 
