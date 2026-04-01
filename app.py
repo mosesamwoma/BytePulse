@@ -104,11 +104,26 @@ if view == "Daily":
     if forecast_df is None:
         st.info("Not enough data to forecast.")
     else:
-        forecast_df["day"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A")
-        st.line_chart(forecast_df.set_index("day")["predicted_MB"])
-        cols = st.columns(7)
-        for i, (_, row) in enumerate(forecast_df.iterrows()):
-            cols[i].metric(row["day"], f"{row['predicted_MB']} MB")
+        forecast_df["day_label"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A %d %b")
+
+        fig2, ax2 = plt.subplots(figsize=(10, 3))
+        ax2.plot(forecast_df["day_label"], forecast_df["predicted_MB"], marker="o", color="#1f77b4")
+        ax2.fill_between(
+            forecast_df["day_label"],
+            forecast_df["lower_MB"],
+            forecast_df["upper_MB"],
+            alpha=0.2,
+            color="#1f77b4"
+        )
+        ax2.set_xlabel("Day")
+        ax2.set_ylabel("Predicted MB")
+        ax2.tick_params(axis="x", rotation=15)
+        plt.tight_layout()
+        st.pyplot(fig2)
+
+        display_df = forecast_df[["day_label", "predicted_MB", "lower_MB", "upper_MB"]].copy()
+        display_df.columns = ["Day", "Predicted (MB)", "Lower (MB)", "Upper (MB)"]
+        st.dataframe(display_df, use_container_width=True)
 
     st.markdown("---")
 
