@@ -10,6 +10,10 @@ from datetime import date
 st.set_page_config(page_title="BytePulse", layout="wide")
 st.title("BytePulse Dashboard")
 
+if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
+    st.rerun()
+
 @st.cache_data
 def load_cached():
     return load_data()
