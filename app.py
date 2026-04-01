@@ -104,10 +104,11 @@ if view == "Daily":
     if forecast_df is None:
         st.info("Not enough data to forecast.")
     else:
-        forecast_df["day"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A, %Y-%m-%d")
-        display_df = forecast_df[["day", "predicted_MB", "lower_MB", "upper_MB"]]
+        forecast_df["day"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A")
         st.line_chart(forecast_df.set_index("day")["predicted_MB"])
-        st.dataframe(display_df, use_container_width=True)
+        cols = st.columns(7)
+        for i, (_, row) in enumerate(forecast_df.iterrows()):
+            cols[i].metric(row["day"], f"{row['predicted_MB']} MB")
 
     st.markdown("---")
 
