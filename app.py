@@ -100,8 +100,10 @@ if view == "Daily":
     if forecast_df is None:
         st.info("Not enough data to forecast.")
     else:
-        st.line_chart(forecast_df.set_index("date")["predicted_MB"])
-        st.dataframe(forecast_df, use_container_width=True)
+        forecast_df["day"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A, %Y-%m-%d")
+        display_df = forecast_df[["day", "predicted_MB", "lower_MB", "upper_MB"]]
+        st.line_chart(forecast_df.set_index("day")["predicted_MB"])
+        st.dataframe(display_df, use_container_width=True)
 
     st.markdown("---")
 
@@ -111,12 +113,12 @@ if view == "Daily":
         st.success("No anomalous sessions detected.")
     else:
         st.warning(f"{len(anomalies)} anomalous sessions detected.")
-        st.dataframe(anomalies, use_container_width=True)
+        st.dataframe(anomalies.tail(10), use_container_width=True)
 
     st.markdown("---")
 
 st.subheader("Detailed Data")
 if view == "Daily":
-    st.dataframe(data.tail(20), use_container_width=True)
+    st.dataframe(data.tail(7), use_container_width=True)
 else:
     st.dataframe(data, use_container_width=True)

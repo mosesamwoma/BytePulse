@@ -27,14 +27,18 @@ def forecast(days=7):
     )
     model.fit(daily)
 
-    future = model.make_future_dataframe(periods=days)
+    future = model.make_future_dataframe(periods=days, freq="D")
     forecast_df = model.predict(future)
 
-    forecast_df = forecast_df[["ds", "yhat", "yhat_lower", "yhat_upper"]].tail(days)
+    today = pd.Timestamp.today().normalize()
+    forecast_df = forecast_df[forecast_df["ds"] >= today].head(days)
+
+    forecast_df = forecast_df[["ds", "yhat", "yhat_lower", "yhat_upper"]]
     forecast_df.columns = ["date", "predicted_MB", "lower_MB", "upper_MB"]
     forecast_df["predicted_MB"] = forecast_df["predicted_MB"].clip(lower=0).round(2)
     forecast_df["lower_MB"]     = forecast_df["lower_MB"].clip(lower=0).round(2)
     forecast_df["upper_MB"]     = forecast_df["upper_MB"].clip(lower=0).round(2)
+    forecast_df["date"]         = forecast_df["date"].dt.strftime("%Y-%m-%d")
 
     return forecast_df, model
 
