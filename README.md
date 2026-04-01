@@ -170,6 +170,9 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
+
+![7-Day Usage Forecast](screenshort/6.png)
+
 ---
 
 ## API
