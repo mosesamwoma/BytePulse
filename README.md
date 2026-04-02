@@ -143,9 +143,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are available in the daily view.
 
-![Dashboard overview](screenshort/1.png)
+![Dashboard overview](screenshots/1.png)
 
-![Peak hours and detailed data](screenshort/3.png)
+![Peak hours and detailed data](screenshots/3.png)
 
 ---
 
@@ -159,8 +159,8 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 - Predicts `usage_MB` for the next 7 days with upper and lower confidence bounds
 
 **What you get:**
-- A line chart showing predicted daily usage
-- A table with `predicted_MB`, `lower_MB`, and `upper_MB` per day
+- A line chart showing predicted daily usage with confidence band
+- A table with `Day`, `Predicted (MB)`, `Lower (MB)`, and `Upper (MB)` per day
 - Visible in the dashboard under the **Daily** view
 
 **Why it's useful:**
@@ -170,8 +170,7 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
-
-![7-Day Usage Forecast](screenshort/6.png)
+![7-Day Usage Forecast](screenshots/6.png)
 
 ---
 
@@ -192,7 +191,7 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
 
-![API interface](screenshort/5.png)
+![API interface](screenshots/5.png)
 
 ---
 
@@ -275,6 +274,13 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ---
 
+## Roadmap
+
+- [ ] Per-SSID usage breakdown
+- [ ] ISP billing cycle alignment
+
+---
+
 ## Contributing
 
 1. Fork the repo and clone it
@@ -285,13 +291,13 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ---
 
-##  Support This Project
+## ⭐ Support This Project
 
 If you found this project helpful, consider giving it a star!
 
--  Star this repository
--  Fork it to contribute
--  Open issues or suggest features
+- ⭐ Star this repository
+- 🍴 Fork it to contribute
+- 🛠️ Open issues or suggest features
 
 Thanks for your support!
 
