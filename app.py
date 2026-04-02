@@ -133,7 +133,7 @@ if view == "Daily":
         st.success("No anomalous sessions detected.")
     else:
         st.warning(f"{len(anomalies)} anomalous sessions detected.")
-        st.dataframe(anomalies.tail(10), use_container_width=True)
+        st.dataframe(anomalies.tail(7), use_container_width=True)
 
     st.markdown("---")
 
