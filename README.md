@@ -23,30 +23,6 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ---
 
-## Features
-
-- **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
-- **Triple-format logging** — every session saved to CSV, JSON, and SQLite simultaneously
-- **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
-- **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
-- **System tray icon** — right-click to open dashboard, stop tracker, or quit
-- **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
-- **Anomaly detection** — flags sessions with unusually high usage via Z-score
-- **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
-- **7-day usage forecast** — Prophet-powered time series forecasting
-- **REST API** — query your usage data as JSON via FastAPI
-
----
-
-## Requirements
-
-- Windows 10 or 11
-- [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
-
-> ⚠️ `psutil` has known compatibility issues with Python versions above 3.11. Use **Python 3.11 specifically** to avoid installation or runtime errors.
-
----
-
 ## Architecture
 
 ```mermaid
@@ -73,6 +49,30 @@ graph TD
     Data -->|Visualizes data| Streamlit
     Data -->|Serves data endpoints| FastAPI
 ```
+
+---
+
+## Features
+
+- **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
+- **Triple-format logging** — every session saved to CSV, JSON, and SQLite simultaneously
+- **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
+- **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
+- **System tray icon** — right-click to open dashboard, stop tracker, or quit
+- **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
+- **Anomaly detection** — flags sessions with unusually high usage via Z-score
+- **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
+- **7-day usage forecast** — Prophet-powered time series forecasting
+- **REST API** — query your usage data as JSON via FastAPI
+
+---
+
+## Requirements
+
+- Windows 10 or 11
+- [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
+
+> ⚠️ `psutil` has known compatibility issues with Python versions above 3.11. Use **Python 3.11 specifically** to avoid installation or runtime errors.
 
 ---
 
