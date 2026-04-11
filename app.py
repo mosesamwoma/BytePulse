@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
 from src.anomaly import detect_anomalies
-from src.alerts import get_cycle_usage, CAP_MB, WARN_THRESHOLD
+from src.alerts import get_daily_usage_sqlite, CAP_MB, WARN_THRESHOLD
 from src.forecaster import forecast
 from datetime import date
 
@@ -52,7 +52,7 @@ st.markdown("---")
 
 if view == "Daily":
     st.subheader("Data Cap")
-    cycle_usage = get_cycle_usage()
+    cycle_usage = get_daily_usage_sqlite()
     usage_pct   = min(cycle_usage / CAP_MB, 1.0)
     st.metric("Daily Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
     st.progress(usage_pct)
