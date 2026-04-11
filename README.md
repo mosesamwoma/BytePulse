@@ -214,7 +214,7 @@ AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
 
 Edit these constants in `src/alerts.py`:
 ```python
-CAP_MB         = 6144  # daily data cap in MB (6144 = 6GB)
+CAP_MB         = 10240  # daily data cap in MB (10240 = 10GB)
 WARN_THRESHOLD = 0.8   # alert at 80% usage
 ```
 
