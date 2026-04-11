@@ -56,9 +56,18 @@ cd BytePulse
 ```
 
 ### 2. Install dependencies
+
+**Option A: Using pyproject.toml (recommended)**
+```bash
+pip install -e .
+```
+
+**Option B: Using requirements.txt**
 ```bash
 pip install -r requirements.txt
 ```
+
+> 💡 The `-e` flag installs in editable mode, so code changes take effect immediately without reinstalling.
 
 ### 3. Configure the launcher
 
@@ -278,6 +287,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 - [ ] Per-SSID usage breakdown
 - [ ] ISP billing cycle alignment
+- [ ] Cross-Platform Portability
 
 ---
 
@@ -291,13 +301,13 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ---
 
-##  Support This Project
+## Support This Project
 
 If you found this project helpful, consider giving it a star!
 
--  Star this repository
--  Fork it to contribute
--  Open issues or suggest features
+- ⭐ Star this repository
+- 🍴 Fork it to contribute
+- 🐛 Open issues or suggest features
 
 Thanks for your support!
 
