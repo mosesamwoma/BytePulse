@@ -23,35 +23,6 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ---
 
-## Architecture
-
-```mermaid
-graph TD
-    classDef system fill:#e1bee7,stroke:#8e24aa,stroke-width:2px,color:#000;
-    classDef core fill:#bbdefb,stroke:#1e88e5,stroke-width:2px,color:#000;
-    classDef data fill:#c8e6c9,stroke:#43a047,stroke-width:2px,color:#000;
-    classDef ui fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px,color:#000;
-    classDef alerts fill:#fff9c4,stroke:#f9a825,stroke-width:2px,color:#000;
-
-    TaskSched[Windows Task Scheduler]:::system
-    Tracker[Tracker - src/tracker.py]:::core
-    Tray[Tray App - src/tray.py]:::core
-    Alerts[Alerts - src/alerts.py]:::alerts
-    Data[(Local Data - SQLite/CSV/JSON)]:::data
-    Streamlit[Streamlit Dashboard - app.py]:::ui
-    FastAPI[FastAPI - api/]:::ui
-
-    TaskSched -->|Triggers at login| Tracker
-    TaskSched -->|Triggers at login| Tray
-    Tracker -->|Saves usage logs| Data
-    Tracker -->|Triggers| Alerts
-    Tray -.->|Opens| Data
-    Data -->|Visualizes data| Streamlit
-    Data -->|Serves data endpoints| FastAPI
-```
-
----
-
 ## Features
 
 - **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
