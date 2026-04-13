@@ -7,7 +7,7 @@ requires-python = "==3.11.*"
 authors = [
     {name = "Moses Amwoma", email = "mosesamwoma@gmail.com"}
 ]
-keywords = ["data-science", "network-tracking", "python", "machine-learning", "privacy"]
+keywords = ["network-tracking", "python", "machine-learning", "privacy"]
 classifiers = [
     "Programming Language :: Python :: 3.11",
     "Operating System :: Microsoft :: Windows",
