@@ -26,8 +26,8 @@ LOCK_PATH = os.path.join(DATA_DIR, "tracker.lock")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
-POLL_INTERVAL      = 5
-AUTO_SAVE_INTERVAL = 1800
+POLL_INTERVAL      = 5 # seconds between checks for interface status
+AUTO_SAVE_INTERVAL = 1800 # 30 minutes in seconds, for auto-saving active sessions
 
 logging.basicConfig(
     filename=LOG_PATH,
