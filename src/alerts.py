@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
 
 CAP_MB = 10240  # 10GB in MB
-WARN_THRESHOLD = 0.8
+WARN_THRESHOLD = 0.8 # 80% of the daily cap
 CHECK_INTERVAL = 1800  # 30 minutes in seconds
 
 alert_states = {"warn": False, "limit": False}
