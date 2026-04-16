@@ -1,5 +1,5 @@
 @echo off
-cd /d "C:\path\to\BytePulse"
+cd /d "."
 
 if not exist data mkdir data
 
