@@ -288,6 +288,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - [ ] Per-SSID usage breakdown
 - [ ] ISP billing cycle alignment
 - [ ] Cross-Platform Portability
+- [ ] Migrate to PostgeSQL
 
 ---
 
