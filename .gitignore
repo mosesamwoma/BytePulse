@@ -9,5 +9,4 @@ data/*
 *.log
 *.lock
 *.json
-*.pdf
 *.db
