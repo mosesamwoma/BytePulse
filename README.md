@@ -85,10 +85,11 @@ pip install -r requirements.txt
 
 ### 4. Configure the launcher
 
-Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the placeholder path with your actual BytePulse folder path:
+Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the two placeholder paths — the BytePulse folder and the `pythonw.exe` path inside your venv:
 
 ```bat
 cd /d "C:\Users\YourName\BytePulse"
+set PYTHONW=C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe
 ```
 
 > 💡 **Finding your path:** Open File Explorer, navigate to the BytePulse folder, and click the address bar — it shows the full path (e.g. `C:\Users\YourName\BytePulse`).
@@ -123,20 +124,18 @@ If it prints `(0,)` after 30 minutes, check [Troubleshooting](#troubleshooting).
 
 BytePulse uses Windows Task Scheduler to launch at login with no visible window.
 
-**Step 1 — Get your paths.** Run this in PowerShell:
+**Step 1 — Get your pythonw path.** Run this in PowerShell:
 
 ```powershell
-(Get-Command pythonw).Source
+(Get-Item "venv\Scripts\pythonw.exe").FullName
 ```
-
-This gives you your `pythonw.exe` path. Your BytePulse folder path is where you cloned the repo.
 
 **Step 2 — Register the tasks.** Open **PowerShell as Administrator** (`Win + S` → type `powershell` → right-click → **Run as administrator**) and paste this, replacing the two variables at the top:
 
 ```powershell
 # ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
-$base    = "C:\Users\YourName\BytePulse"                                            # ← your BytePulse folder
-$pythonw = "C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe"  # ← from step 1
+$base    = "C:\Users\YourName\BytePulse"                               # ← your BytePulse folder
+$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 1
 # ─────────────────────────────────────────────────────────────────────────────
 
 $trigger  = New-ScheduledTaskTrigger -AtLogOn
@@ -149,7 +148,7 @@ Register-ScheduledTask -TaskName "BytePulse-Tray" `
 $triggerTracker       = New-ScheduledTaskTrigger -AtLogOn
 $triggerTracker.Delay = "PT10S"
 Register-ScheduledTask -TaskName "BytePulse-Tracker" `
-    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "-m src.tracker" -WorkingDirectory $base) `
+    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
     -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
 ```
 
@@ -182,9 +181,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **Daily**, **Weekly**, and **Monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are only visible in the Daily view.
 
-![Dashboard overview](assets/1.png)
+![Dashboard overview](assets/dashboard-overview.png)
 
-![Peak hours and detailed data](assets/3.png)
+![Peak hours and detailed data](assets/peak-hours.png)
 
 ---
 
@@ -205,7 +204,7 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
-![7-Day Usage Forecast](assets/6.png)
+![7-Day Usage Forecast](assets/forecast.png)
 
 ---
 
@@ -227,7 +226,6 @@ Opens at `http://localhost:8000/docs`.
 | `GET /sessions/weekly` | Weekly summaries |
 | `GET /sessions/monthly` | Monthly summaries |
 
-
 ---
 
 ## Configuration
@@ -245,6 +243,8 @@ Edit these constants in `src/alerts.py`:
 CAP_MB         = 10240  # daily data cap in MB (10240 = 10 GB)
 WARN_THRESHOLD = 0.8    # alert at 80% usage
 ```
+
+> 💡 These are hardcoded by design — no config file needed. Just edit and save; changes take effect on next run.
 
 ---
 
@@ -308,7 +308,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 **`Get-Process pythonw` shows nothing after running `start_tracker.bat`**
 - Make sure your virtual environment is activated: `venv\Scripts\activate`
-- Check that the path in `start_tracker.bat` matches your actual BytePulse folder
+- Check that the paths in `start_tracker.bat` match your actual BytePulse folder
 - Run `start_tracker.bat` directly by double-clicking it and look for any error message in the terminal
 
 **`psutil` install fails or crashes at runtime**
@@ -317,7 +317,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 **Task Scheduler tasks registered but BytePulse doesn't start on login**
 - Confirm both tasks show `State: Ready` in Task Scheduler (`Win + S` → Task Scheduler)
-- Make sure `pythonw.exe` path in the task is correct — rerun `(Get-Command pythonw).Source` to verify
+- Make sure the `pythonw.exe` path in the task points to `venv\Scripts\pythonw.exe` inside your BytePulse folder
 - Check that you ran the registration script as Administrator
 
 **No data after 30 minutes**
@@ -348,7 +348,6 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - [ ] Per-SSID usage breakdown
 - [ ] ISP billing cycle alignment
 - [ ] Cross-platform portability (macOS / Linux)
-- [ ] Migrate to PostgreSQL
 
 ---
 
