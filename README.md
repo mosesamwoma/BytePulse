@@ -181,9 +181,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **Daily**, **Weekly**, and **Monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are only visible in the Daily view.
 
-![Dashboard overview](assets/dashboard-overview.png)
+![Dashboard overview](assets/1.png)
 
-![Peak hours and detailed data](assets/peak-hours.png)
+![Peak hours and detailed data](assets/3.png)
 
 ---
 
@@ -204,7 +204,7 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
-![7-Day Usage Forecast](assets/forecast.png)
+![7-Day Usage Forecast](assets/6.png)
 
 ---
 
