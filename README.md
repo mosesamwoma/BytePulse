@@ -34,7 +34,6 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 - **Anomaly detection** — flags sessions with unusually high usage via Z-score
 - **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
 - **7-day usage forecast** — Prophet-powered time series forecasting
-- **REST API** — query your usage data as JSON via FastAPI
 
 ---
 
@@ -208,26 +207,6 @@ The model retrains automatically every time the dashboard loads — no manual st
 
 ---
 
-## API
-
-BytePulse includes a FastAPI-powered REST API that serves your usage data as JSON. It is **local-only** — it never exposes data outside your machine.
-
-```bash
-uvicorn api.main:app --reload
-```
-
-Opens at `http://localhost:8000/docs`.
-
-| Endpoint | Description |
-|---|---|
-| `GET /sessions` | All sessions |
-| `GET /sessions/today` | Today's sessions |
-| `GET /sessions/daily` | Daily summaries |
-| `GET /sessions/weekly` | Weekly summaries |
-| `GET /sessions/monthly` | Monthly summaries |
-
----
-
 ## Configuration
 
 Edit these constants in `src/tracker.py`:
@@ -276,7 +255,7 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 
 ### `data/bytepulse.db`
 
-SQLite database with a `sessions` table — queryable directly via the API or any SQLite client (e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)).
+SQLite database with a `sessions` table — queryable directly via any SQLite client (e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)).
 
 > ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy it first:
 > ```powershell
