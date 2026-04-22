@@ -2,10 +2,17 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 from src.analyzer import load_data, summarize
+from src.anomaly import detect_anomalies
+from src.alerts import get_daily_usage_sqlite, CAP_MB, WARN_THRESHOLD
+from src.forecaster import forecast
 from datetime import date
 
 st.set_page_config(page_title="BytePulse", layout="wide")
 st.title("BytePulse Dashboard")
+
+if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
+    st.rerun()
 
 @st.cache_data
 def load_cached():
@@ -42,6 +49,14 @@ c4.metric("Peak Usage (MB)", round(data["total_MB"].max(), 2))
 c5.metric("Today's Usage (MB)", today_usage)
 
 st.markdown("---")
+
+if view == "Daily":
+    st.subheader("Data Cap")
+    cycle_usage = get_daily_usage_sqlite()
+    usage_pct   = min(cycle_usage / CAP_MB, 1.0)
+    st.metric("Daily Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
+    st.progress(usage_pct)
+    st.markdown("---")
 
 st.subheader("Data Usage Over Time (MB)")
 st.line_chart(data.set_index(x)["total_MB"])
@@ -84,8 +99,46 @@ if view == "Daily":
 
     st.markdown("---")
 
+    st.subheader("7-Day Usage Forecast")
+    forecast_df, _ = forecast(days=7)
+    if forecast_df is None:
+        st.info("Not enough data to forecast.")
+    else:
+        forecast_df["day_label"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A %d %b")
+
+        fig2, ax2 = plt.subplots(figsize=(10, 3))
+        ax2.plot(forecast_df["day_label"], forecast_df["predicted_MB"], marker="o", color="#1f77b4")
+        ax2.fill_between(
+            forecast_df["day_label"],
+            forecast_df["lower_MB"],
+            forecast_df["upper_MB"],
+            alpha=0.2,
+            color="#1f77b4"
+        )
+        ax2.set_xlabel("Day")
+        ax2.set_ylabel("Predicted MB")
+        ax2.tick_params(axis="x", rotation=15)
+        plt.tight_layout()
+        st.pyplot(fig2)
+
+        display_df = forecast_df[["day_label", "predicted_MB", "lower_MB", "upper_MB"]].copy()
+        display_df.columns = ["Day", "Predicted (MB)", "Lower (MB)", "Upper (MB)"]
+        st.dataframe(display_df, use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("Anomaly Detection")
+    anomalies = detect_anomalies()
+    if anomalies.empty:
+        st.success("No anomalous sessions detected.")
+    else:
+        st.warning(f"{len(anomalies)} anomalous sessions detected.")
+        st.dataframe(anomalies.tail(7), use_container_width=True)
+
+    st.markdown("---")
+
 st.subheader("Detailed Data")
 if view == "Daily":
-    st.dataframe(data.tail(20), use_container_width=True)
+    st.dataframe(data.tail(7), use_container_width=True)
 else:
     st.dataframe(data, use_container_width=True)

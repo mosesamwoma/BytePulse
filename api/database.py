@@ -14,7 +14,7 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            start_time TEXT NOT NULL,
+            start_time TEXT NOT NULL UNIQUE,
             end_time TEXT NOT NULL,
             duration_minutes REAL,
             bytes_sent INTEGER,
@@ -23,6 +23,9 @@ def init_db():
             usage_MB REAL
         )
     """)
+    conn.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_start_time ON sessions(start_time)
+    """)
     conn.commit()
     conn.close()
 
@@ -30,7 +33,7 @@ def save_to_db(record: dict):
     try:
         conn = get_connection()
         conn.execute("""
-            INSERT INTO sessions (start_time, end_time, duration_minutes, bytes_sent, bytes_received, total_bytes, usage_MB)
+            INSERT OR IGNORE INTO sessions (start_time, end_time, duration_minutes, bytes_sent, bytes_received, total_bytes, usage_MB)
             VALUES (:start_time, :end_time, :duration_minutes, :bytes_sent, :bytes_received, :total_bytes, :usage_MB)
         """, record)
         conn.commit()

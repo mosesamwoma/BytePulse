@@ -1,0 +1,44 @@
+[project]
+name = "BytePulse"
+version = "1.0.0"
+description = "Private, local-first WiFi data tracking, forecasting, and anomaly detection."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+authors = [
+    {name = "Moses Amwoma", email = "mosesamwoma@gmail.com"}
+]
+keywords = ["network-tracking", "python", "machine-learning", "privacy"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: System :: Monitoring",
+]
+
+dependencies = [
+    "psutil==5.9.8",
+    "pandas==2.2.2",
+    "matplotlib==3.9.2",
+    "streamlit==1.39.0",
+    "pystray==0.19.5",
+    "Pillow==10.4.0",
+    "fastapi==0.111.0",
+    "uvicorn[standard]==0.30.1",
+    "winotify==1.1.0",
+    "prophet==1.1.6",
+    "scikit-learn==1.5.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/mosesamwoma/BytePulse"
+Repository = "https://github.com/mosesamwoma/BytePulse"
+Issues = "https://github.com/mosesamwoma/BytePulse/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
