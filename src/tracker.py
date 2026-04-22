@@ -13,7 +13,7 @@ import tempfile
 import shutil
 import threading
 import msvcrt
-from api.database import init_db, save_to_db
+from database.database import init_db, save_to_db
 from src.anomaly import detect_anomalies
 from src.alerts import check_alerts
 
