@@ -5,10 +5,11 @@ from src.analyzer import load_data, summarize
 from src.anomaly import detect_anomalies
 from src.alerts import get_daily_usage_sqlite, CAP_MB, WARN_THRESHOLD
 from src.forecaster import forecast
-from datetime import date
+from datetime import date, datetime
 
 st.set_page_config(page_title="BytePulse", layout="wide")
 st.title("BytePulse Dashboard")
+st.caption(f"Last refreshed: {datetime.now().strftime('%H:%M:%S')}")
 
 if st.button("🔄 Refresh Data"):
     st.cache_data.clear()
@@ -129,11 +130,22 @@ if view == "Daily":
 
     st.subheader("Anomaly Detection")
     anomalies = detect_anomalies()
+
+    def color_anomaly_row(row):
+        if abs(row["z_score"]) >= 3:
+            return ["background-color: #3d0000; color: #ff4c4c"] * len(row)
+        elif abs(row["z_score"]) >= 2:
+            return ["background-color: #3d2e00; color: #ffaa00"] * len(row)
+        return [""] * len(row)
+
     if anomalies.empty:
         st.success("No anomalous sessions detected.")
     else:
         st.warning(f"{len(anomalies)} anomalous sessions detected.")
-        st.dataframe(anomalies.tail(7), use_container_width=True)
+        st.dataframe(
+            anomalies.tail(7).style.apply(color_anomaly_row, axis=1),
+            use_container_width=True
+        )
 
     st.markdown("---")
 
