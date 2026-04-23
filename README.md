@@ -350,9 +350,9 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 If BytePulse saved you from blowing your data cap, consider:
 
-- ⭐ Starring the repository
-- 🍴 Forking it to contribute
-- 🐛 Opening issues or suggesting features
+-  Starring the repository
+-  Forking it to contribute
+-  Opening issues or suggesting features
 
 ---
 
