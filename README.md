@@ -34,7 +34,6 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 - **Anomaly detection** — flags sessions with unusually high usage via Z-score
 - **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
 - **7-day usage forecast** — Prophet-powered time series forecasting
-- **REST API** — query your usage data as JSON via FastAPI
 
 ---
 
@@ -43,19 +42,33 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 - Windows 10 or 11
 - [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
 
-> ⚠️ `psutil` has known compatibility issues with Python versions above 3.11. Use **Python 3.11 specifically** to avoid installation or runtime errors.
+> ⚠️ **Use Python 3.11 specifically.** `psutil` has known compatibility issues with Python 3.12+. Using any other version may cause install or runtime errors.
 
 ---
 
 ## Getting Started
 
 ### 1. Clone the repo
+
 ```bash
 git clone https://github.com/mosesamwoma/BytePulse.git
 cd BytePulse
 ```
 
-### 2. Install dependencies
+### 2. Create a virtual environment
+
+Always use a virtual environment to avoid conflicts with other Python projects on your system.
+
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+You should see `(venv)` appear at the start of your terminal line. This means the virtual environment is active.
+
+> 💡 You'll need to run `venv\Scripts\activate` every time you open a new terminal window before working on BytePulse.
+
+### 3. Install dependencies
 
 **Option A: Using pyproject.toml (recommended)**
 ```bash
@@ -67,66 +80,85 @@ pip install -e .
 pip install -r requirements.txt
 ```
 
-> 💡 The `-e` flag installs in editable mode, so code changes take effect immediately without reinstalling.
+> 💡 The `-e` flag installs in editable mode — code changes take effect immediately without reinstalling.
 
-### 3. Configure the launcher
+### 4. Configure the launcher
 
-Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the placeholder path with your actual BytePulse folder path:
+Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the two placeholder paths — the BytePulse folder and the `pythonw.exe` path inside your venv:
+
 ```bat
 cd /d "C:\Users\YourName\BytePulse"
+set PYTHONW=C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe
 ```
 
 > 💡 **Finding your path:** Open File Explorer, navigate to the BytePulse folder, and click the address bar — it shows the full path (e.g. `C:\Users\YourName\BytePulse`).
 
-> 💡 **Seeing file extensions:** Open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving as `start_tracker.bat.bat`.
+> 💡 **Seeing file extensions:** Open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving the file as `start_tracker.bat.bat`.
 
-### 4. Run manually to test
+### 5. Run manually to test
+
 ```powershell
 .\start_tracker.bat
 ```
 
 A BytePulse icon appears in the system tray. Right-click to open the dashboard, stop the tracker, or quit.
 
-After 30 minutes, check `data/usage_log.csv` — a row should appear. Confirm the tracker is running:
+**Verify it's running immediately** — don't wait 30 minutes:
+
 ```powershell
 Get-Process pythonw
 ```
 
-You should see exactly **two** `pythonw` processes (tracker + tray).
+You should see exactly **two** `pythonw` processes (tracker + tray). If you see zero, check the [Troubleshooting](#troubleshooting) section.
 
-### 5. Enable silent startup
+After 30 minutes, a row should appear in `data/usage_log.csv`. You can also check the SQLite database directly:
+
+```powershell
+python -c "import sqlite3; conn = sqlite3.connect('data/bytepulse.db'); print(conn.execute('SELECT COUNT(*) FROM sessions').fetchone()); conn.close()"
+```
+
+If it prints `(0,)` after 30 minutes, check [Troubleshooting](#troubleshooting).
+
+### 6. Enable silent startup
 
 BytePulse uses Windows Task Scheduler to launch at login with no visible window.
 
-**Step 1 — Get your paths.** Run this in PowerShell:
+**Step 1 — Get your pythonw path.** Run this in PowerShell:
+
 ```powershell
-(Get-Command pythonw).Source
+(Get-Item "venv\Scripts\pythonw.exe").FullName
 ```
 
-This gives you your `pythonw.exe` path. Your BytePulse folder path you already know (it's where you cloned the repo).
+**Step 2 — Register the tasks.** Open **PowerShell as Administrator** (`Win + S` → type `powershell` → right-click → **Run as administrator**) and paste this, replacing the two variables at the top:
 
-**Step 2 — Register the tasks.** Open **PowerShell as Administrator** (`Win + S` → `powershell` → right-click → **Run as administrator**) and paste this, replacing the two variables at the top:
 ```powershell
 # ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
-$base    = "C:\Users\YourName\BytePulse"                                            # ← your BytePulse folder
-$pythonw = "C:\Users\YourName\AppData\Local\Programs\Python\Python311\pythonw.exe"  # ← from step 1
+$base    = "C:\Users\YourName\BytePulse"                               # ← your BytePulse folder
+$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 1
 # ─────────────────────────────────────────────────────────────────────────────
 
-$trigger  = New-ScheduledTaskTrigger -AtLogOn
-$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
+if (-not (Test-Path $pythonw)) { Write-Error "pythonw.exe not found: $pythonw"; exit 1 }
+if (-not (Test-Path $base))    { Write-Error "BytePulse folder not found: $base"; exit 1 }
 
+$settingsTray    = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
+$settingsTracker = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
+
+$trigger = New-ScheduledTaskTrigger -AtLogOn
 Register-ScheduledTask -TaskName "BytePulse-Tray" `
     -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
-    -Trigger $trigger -Settings $settings -RunLevel Highest -Force
+    -Trigger $trigger -Settings $settingsTray -RunLevel Highest -Force
+Write-Host "✅ BytePulse-Tray registered"
 
 $triggerTracker       = New-ScheduledTaskTrigger -AtLogOn
 $triggerTracker.Delay = "PT10S"
 Register-ScheduledTask -TaskName "BytePulse-Tracker" `
-    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "-m src.tracker" -WorkingDirectory $base) `
-    -Trigger $triggerTracker -Settings $settings -RunLevel Highest -Force
+    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
+    -Trigger $triggerTracker -Settings $settingsTracker -RunLevel Highest -Force
+Write-Host "✅ BytePulse-Tracker registered (10s delay)"
 ```
 
-Confirm both registered:
+**Step 3 — Confirm both registered:**
+
 ```powershell
 Get-ScheduledTask -TaskName "BytePulse-Tracker"
 Get-ScheduledTask -TaskName "BytePulse-Tray"
@@ -134,9 +166,10 @@ Get-ScheduledTask -TaskName "BytePulse-Tray"
 
 Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
 
-### 6. Migrate existing data to SQLite
+### 7. Migrate existing data to SQLite
 
-If you have existing CSV data, run this once to sync it to the database:
+If you have existing CSV data from a previous run, sync it to the database once:
+
 ```bash
 python -m scripts.migrate_csv_to_db
 ```
@@ -144,13 +177,14 @@ python -m scripts.migrate_csv_to_db
 ---
 
 ## Dashboard
+
 ```bash
 streamlit run app.py
 ```
 
 Or right-click the system tray icon → **Open Dashboard**. Opens at `http://localhost:8501`.
 
-Switch between **daily**, **weekly**, and **monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are available in the daily view.
+Switch between **Daily**, **Weekly**, and **Monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are only visible in the Daily view.
 
 ![Dashboard overview](assets/1.png)
 
@@ -160,22 +194,18 @@ Switch between **daily**, **weekly**, and **monthly** views from the sidebar. Th
 
 ## ML — 7-Day Usage Forecast
 
-BytePulse uses **Prophet** (Meta's time series forecasting library) to predict your WiFi usage for the next 7 days based on your historical session data.
+BytePulse uses **Prophet** (Meta's time series forecasting library) to predict your WiFi usage for the next 7 days.
 
 **How it works:**
 - Aggregates your session data into daily totals
 - Fits a Prophet model with weekly seasonality
 - Predicts `usage_MB` for the next 7 days with upper and lower confidence bounds
 
-**What you get:**
-- A line chart showing predicted daily usage with confidence band
-- A table with `Day`, `Predicted (MB)`, `Lower (MB)`, and `Upper (MB)` per day
-- Visible in the dashboard under the **Daily** view
+**What you need:** at least 10 days of recorded data before the forecast section appears.
 
-**Why it's useful:**
-- See which days of the week you consistently use more data
-- Get early warning before hitting your daily cap
-- Understand your usage patterns over time
+**What you get:**
+- A line chart showing predicted daily usage with a confidence band
+- A table with `Day`, `Predicted (MB)`, `Lower (MB)`, and `Upper (MB)` per day
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
@@ -183,40 +213,23 @@ The model retrains automatically every time the dashboard loads — no manual st
 
 ---
 
-## API
-
-BytePulse includes a FastAPI-powered REST API that serves your usage data as JSON.
-```bash
-uvicorn api.main:app --reload
-```
-
-Opens at `http://localhost:8000/docs`.
-
-| Endpoint | Description |
-|---|---|
-| `GET /sessions` | All sessions |
-| `GET /sessions/today` | Today's sessions |
-| `GET /sessions/daily` | Daily summaries |
-| `GET /sessions/weekly` | Weekly summaries |
-| `GET /sessions/monthly` | Monthly summaries |
-
-![API interface](assets/5.png)
-
----
-
 ## Configuration
 
 Edit these constants in `src/tracker.py`:
+
 ```python
 POLL_INTERVAL      = 5     # seconds between WiFi checks
 AUTO_SAVE_INTERVAL = 1800  # seconds between auto-saves (1800 = 30 min)
 ```
 
 Edit these constants in `src/alerts.py`:
+
 ```python
-CAP_MB         = 10240  # daily data cap in MB (10240 = 10GB)
-WARN_THRESHOLD = 0.8   # alert at 80% usage
+CAP_MB         = 10240  # daily data cap in MB (10240 = 10 GB)
+WARN_THRESHOLD = 0.8    # alert at 80% usage
 ```
+
+> 💡 These are hardcoded by design — no config file needed. Just edit and save; changes take effect on next run.
 
 ---
 
@@ -231,6 +244,7 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
 
 ### `data/usage_log.json`
+
 ```json
 [
   {
@@ -247,9 +261,9 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 
 ### `data/bytepulse.db`
 
-SQLite database with a `sessions` table — queryable via the API or any SQLite client.
+SQLite database with a `sessions` table — queryable directly via any SQLite client (e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)).
 
-> ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy the file first:
+> ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy it first:
 > ```powershell
 > copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
 > ```
@@ -261,15 +275,46 @@ SQLite database with a `sessions` table — queryable via the API or any SQLite 
 Right-click the system tray icon → **Stop Tracker** or **Quit**.
 
 Or force-stop from PowerShell:
+
 ```powershell
 Stop-Process -Name pythonw -Force
 ```
 
 To remove the Task Scheduler entries entirely:
+
 ```powershell
 Unregister-ScheduledTask -TaskName "BytePulse-Tracker" -Confirm:$false
 Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 ```
+
+---
+
+## Troubleshooting
+
+**`Get-Process pythonw` shows nothing after running `start_tracker.bat`**
+- Make sure your virtual environment is activated: `venv\Scripts\activate`
+- Check that the paths in `start_tracker.bat` match your actual BytePulse folder
+- Run `start_tracker.bat` directly by double-clicking it and look for any error message in the terminal
+
+**`psutil` install fails or crashes at runtime**
+- Confirm you're on Python 3.11: `python --version`
+- If you see 3.12 or higher, install 3.11 from [python.org](https://www.python.org/downloads/release/python-3110/) and recreate the virtual environment
+
+**Task Scheduler tasks registered but BytePulse doesn't start on login**
+- Confirm both tasks show `State: Ready` in Task Scheduler (`Win + S` → Task Scheduler)
+- Make sure the `pythonw.exe` path in the task points to `venv\Scripts\pythonw.exe` inside your BytePulse folder
+- Check that you ran the registration script as Administrator
+
+**No data after 30 minutes**
+- Confirm you're connected to WiFi (BytePulse only tracks WiFi, not Ethernet)
+- Check the `data/` folder exists — create it manually if not: `mkdir data`
+- Look for a `data/usage_log.pending` file — this means the CSV was locked during a save
+
+**Dashboard shows "Not enough data to forecast"**
+- The forecast requires at least 10 days of data. Keep the tracker running and check back later.
+
+**Tray icon doesn't appear**
+- Check Task Manager for `pythonw` processes — if they exist, the icon may be hidden in the system tray overflow area (click the `^` arrow in the taskbar)
 
 ---
 
@@ -287,7 +332,7 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 - [ ] Per-SSID usage breakdown
 - [ ] ISP billing cycle alignment
-- [ ] Cross-Platform Portability
+- [ ] Cross-platform portability (macOS / Linux)
 
 ---
 
@@ -303,18 +348,14 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ## Support This Project
 
-If you found this project helpful, consider giving it a star!
+If BytePulse saved you from blowing your data cap, consider:
 
-- ⭐ Star this repository
-- 🍴 Fork it to contribute
-- 🐛 Open issues or suggest features
-
-Thanks for your support!
+-  Starring the repository
+-  Forking it to contribute
+-  Opening issues or suggesting features
 
 ---
 
 <div align="center">
 <sub>Built for Windows · No cloud · Your data stays yours</sub>
 </div>
-
----
