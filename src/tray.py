@@ -56,6 +56,16 @@ def is_tracker_running():
 
 
 def create_icon():
+    primary = os.path.join(BASE_DIR, "assets", "8.png")
+    backup = os.path.join(BASE_DIR, "assets", "7.png")
+
+    for path in [primary, backup]:
+        if os.path.exists(path):
+            img = Image.open(path).convert("RGBA")
+            img = img.resize((64, 64), Image.LANCZOS)
+            return img
+
+    # fallback to default if neither found
     size = 64
     image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
