@@ -9,6 +9,7 @@ data/*
 *.csv
 *.json
 *.db
+actual_tasks.ps1
 *.sqlite
 *.log
 *.lock
