@@ -267,6 +267,32 @@ SQLite database with a `sessions` table — queryable directly via any SQLite cl
 > ```powershell
 > copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
 > ```
+ 
+ ## Querying the Database
+
+BytePulse stores all session data in a local SQLite database at `data/bytepulse.db`. You can query it directly from the terminal:
+
+```powershell
+sqlite3 data\bytepulse.db
+```
+
+Useful queries:
+
+```sql
+SELECT * FROM sessions LIMIT 10;
+SELECT COUNT(*) FROM sessions;
+SELECT SUM(usage_MB) FROM sessions;
+SELECT date(start_time), SUM(usage_MB) FROM sessions GROUP BY date(start_time);
+SELECT * FROM sessions WHERE usage_MB > 100;
+```
+
+To exit:
+
+```sql
+.quit
+```
+
+> 💡 You can also open `data/bytepulse.db` in [DB Browser for SQLite](https://sqlitebrowser.org/) for a visual interface.
 
 ---
 
