@@ -243,6 +243,11 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 |---|---|---|---|---|---|---|
 | 2026-03-17 16:34:51 | 2026-03-17 16:35:56 | 1.0873 | 886606 | 1629334 | 2515940 | 2.3993 |
 
+> ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy it first:
+> ```powershell
+> copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
+> 
+
 ### `data/usage_log.json`
 
 ```json
@@ -261,12 +266,7 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 
 ### `data/bytepulse.db`
 
-SQLite database with a `sessions` table — queryable directly via any SQLite client (e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)).
-
-> ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy it first:
-> ```powershell
-> copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
-> ```
+SQLite database with a `sessions` table
  
  ## Querying the Database
 
