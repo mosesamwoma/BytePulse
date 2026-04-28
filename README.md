@@ -266,9 +266,9 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 
 ### `data/bytepulse.db`
 
-SQLite database with a `sessions` table
+These is SQLite database with a `sessions` table
  
- ## Querying the Database
+ ### Querying the Database
 
 BytePulse stores all session data in a local SQLite database at `data/bytepulse.db`. You can query it directly from the terminal:
 
