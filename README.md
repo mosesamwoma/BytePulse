@@ -359,3 +359,4 @@ If BytePulse saved you from blowing your data cap, consider:
 <div align="center">
 <sub>Built for Windows · No cloud · Your data stays yours</sub>
 </div>
+
