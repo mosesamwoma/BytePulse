@@ -48,93 +48,186 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ## Getting Started
 
-### 1. Clone the repo
+> 💡 **New to this?** Follow every step in order. Don't skip anything — each step builds on the last.
+
+---
+
+### Step 1 — Check your Python version
+
+Before doing anything else, confirm you have the right Python version installed.
+
+Open PowerShell (`Win + S` → type `powershell` → press Enter) and run:
+
+```powershell
+python --version
+```
+
+You should see:
+
+```
+Python 3.11.x
+```
+
+If you see `3.12`, `3.13`, or anything other than `3.11`, you need to install Python 3.11 first. Download it from [python.org](https://www.python.org/downloads/release/python-3110/). During installation, **check the box that says "Add Python to PATH"** — this is important.
+
+After installing, close PowerShell and reopen it, then run `python --version` again to confirm.
+
+---
+
+### Step 2 — Clone the repository
+
+This downloads the BytePulse code to your computer.
+
+In PowerShell, run:
 
 ```bash
 git clone https://github.com/mosesamwoma/BytePulse.git
 cd BytePulse
 ```
 
-### 2. Create a virtual environment
+After running `cd BytePulse`, your terminal is now inside the BytePulse folder. All future commands assume you are in this folder.
 
-Always use a virtual environment to avoid conflicts with other Python projects on your system.
+> 💡 **Don't have Git?** Download it from [git-scm.com](https://git-scm.com/download/win), install it with default settings, then reopen PowerShell and try again.
+
+---
+
+### Step 3 — Create a virtual environment
+
+A virtual environment is an isolated Python workspace for BytePulse. It keeps BytePulse's dependencies separate from other Python projects on your system so nothing conflicts.
+
+Run:
 
 ```powershell
 python -m venv venv
 venv\Scripts\activate
 ```
 
-You should see `(venv)` appear at the start of your terminal line. This means the virtual environment is active.
+After the second command, your terminal prompt will change to start with `(venv)`, like this:
 
-> 💡 You'll need to run `venv\Scripts\activate` every time you open a new terminal window before working on BytePulse.
+```
+(venv) PS C:\Users\YourName\BytePulse>
+```
 
-### 3. Install dependencies
+That `(venv)` prefix means the virtual environment is active. **You must see this before running any further commands.**
 
-**Option A: Using pyproject.toml (recommended)**
+> ⚠️ **Every time you open a new terminal window**, you need to navigate to the BytePulse folder and run `venv\Scripts\activate` again before working on BytePulse. The `(venv)` prefix does not persist between sessions.
+
+---
+
+### Step 4 — Install dependencies
+
+With the virtual environment active (you see `(venv)` in your prompt), install all required packages.
+
+**Recommended:**
+
 ```bash
 pip install -e .
 ```
 
-**Option B: Using requirements.txt**
+**Alternative (if the above fails):**
+
 ```bash
 pip install -r requirements.txt
 ```
 
-> 💡 The `-e` flag installs in editable mode — code changes take effect immediately without reinstalling.
+This will download and install several packages — it may take a minute or two. You'll see a lot of output scrolling past; that's normal. Wait until you get your prompt back.
 
-### 4. Configure the launcher
+> 💡 The `-e` flag in the first option installs BytePulse in "editable" mode, meaning any code changes you make take effect immediately without reinstalling.
 
-Copy `start_tracker.example.bat` and rename it to `start_tracker.bat`. Open it in Notepad and replace the two placeholder paths — the BytePulse folder and the `pythonw.exe` path inside your venv:
+---
+
+### Step 5 — Configure the launcher
+
+BytePulse uses a `.bat` file to start the tracker. You need to tell it where your files are.
+
+**5a.** In File Explorer, navigate to your BytePulse folder. Click the address bar at the top — it will show your full path, something like:
+
+```
+C:\Users\YourName\BytePulse
+```
+
+Copy that path. You'll need it in a moment.
+
+**5b.** In the BytePulse folder, find the file called `start_tracker.example.bat`. Make a copy of it and rename the copy to `start_tracker.bat`.
+
+> 💡 **Can't see the `.bat` extension?** Open any folder → click the **View** tab at the top → check **File name extensions**. This prevents accidentally saving the file as `start_tracker.bat.bat`.
+
+**5c.** Right-click `start_tracker.bat` → **Open with** → **Notepad**.
+
+Find these two lines near the top:
 
 ```bat
 cd /d "C:\Users\YourName\BytePulse"
 set PYTHONW=C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe
 ```
 
-> 💡 **Finding your path:** Open File Explorer, navigate to the BytePulse folder, and click the address bar — it shows the full path (e.g. `C:\Users\YourName\BytePulse`).
+Replace `C:\Users\YourName\BytePulse` with the actual path you copied in step 5a. For example, if your path is `C:\Users\Moses\Documents\BytePulse`, the lines should become:
 
-> 💡 **Seeing file extensions:** Open any folder → **View** tab → check **File name extensions**. This prevents accidentally saving the file as `start_tracker.bat.bat`.
+```bat
+cd /d "C:\Users\Moses\Documents\BytePulse"
+set PYTHONW=C:\Users\Moses\Documents\BytePulse\venv\Scripts\pythonw.exe
+```
 
-### 5. Run manually to test
+Save the file and close Notepad.
+
+---
+
+### Step 6 — Run manually to test
+
+Before setting up automatic startup, make sure everything works by running BytePulse manually.
+
+In PowerShell (with `(venv)` active):
 
 ```powershell
 .\start_tracker.bat
 ```
 
-A BytePulse icon appears in the system tray. Right-click to open the dashboard, stop the tracker, or quit.
+A BytePulse icon should appear in your system tray (the small icons in the bottom-right corner of your taskbar). If you don't see it, click the `^` arrow in the taskbar to reveal hidden tray icons.
 
-**Verify it's running immediately** — don't wait 30 minutes:
+**Verify the tracker is actually running** — don't wait 30 minutes to find out it crashed:
 
 ```powershell
 Get-Process pythonw
 ```
 
-You should see exactly **two** `pythonw` processes (tracker + tray). If you see zero, check the [Troubleshooting](#troubleshooting) section.
+You should see exactly **two** `pythonw` processes listed (one for the tracker, one for the tray icon). If you see zero, check the [Troubleshooting](#troubleshooting) section.
 
-After 30 minutes, a row should appear in `data/usage_log.csv`. You can also check the SQLite database directly:
+After 30 minutes, a row of data should appear in `data/usage_log.csv`. You can also check the database directly:
 
 ```powershell
 python -c "import sqlite3; conn = sqlite3.connect('data/bytepulse.db'); print(conn.execute('SELECT COUNT(*) FROM sessions').fetchone()); conn.close()"
 ```
 
-If it prints `(0,)` after 30 minutes, check [Troubleshooting](#troubleshooting).
+If it prints `(1,)` or higher, your data is being saved correctly. If it prints `(0,)` after 30 minutes, check [Troubleshooting](#troubleshooting).
 
-### 6. Enable silent startup
+---
 
-BytePulse uses Windows Task Scheduler to launch at login with no visible window.
+### Step 7 — Enable silent startup (optional)
 
-**Step 1 — Get your pythonw path.** Run this in PowerShell:
+This step makes BytePulse start automatically every time you log into Windows, with no visible window. This is optional but recommended for continuous tracking.
+
+> ⚠️ This step requires running PowerShell as Administrator. The commands register tasks with Windows Task Scheduler.
+
+**7a.** First, get the exact path to `pythonw.exe` inside your virtual environment. In PowerShell, run:
 
 ```powershell
 (Get-Item "venv\Scripts\pythonw.exe").FullName
 ```
 
-**Step 2 — Register the tasks.** Open **PowerShell as Administrator** (`Win + S` → type `powershell` → right-click → **Run as administrator**) and paste this, replacing the two variables at the top:
+Copy the output. It will look something like:
+
+```
+C:\Users\Moses\Documents\BytePulse\venv\Scripts\pythonw.exe
+```
+
+**7b.** Open a new PowerShell window **as Administrator**: press `Win + S`, type `powershell`, right-click the result, and select **Run as administrator**. Click Yes on the prompt.
+
+**7c.** In the Administrator PowerShell window, paste the block below. Before pasting, update the two lines at the top (`$base` and `$pythonw`) with your actual paths from steps 5a and 7a:
 
 ```powershell
 # ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
 $base    = "C:\Users\YourName\BytePulse"                               # ← your BytePulse folder
-$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 1
+$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 7a
 # ─────────────────────────────────────────────────────────────────────────────
 
 if (-not (Test-Path $pythonw)) { Write-Error "pythonw.exe not found: $pythonw"; exit 1 }
@@ -157,22 +250,28 @@ Register-ScheduledTask -TaskName "BytePulse-Tracker" `
 Write-Host "✅ BytePulse-Tracker registered (10s delay)"
 ```
 
-**Step 3 — Confirm both registered:**
+You should see two green checkmarks confirming the tasks were registered.
+
+**7d.** Confirm both tasks are ready:
 
 ```powershell
 Get-ScheduledTask -TaskName "BytePulse-Tracker"
 Get-ScheduledTask -TaskName "BytePulse-Tray"
 ```
 
-Both should show `State: Ready`. Restart your PC — BytePulse starts automatically.
+Both should show `State: Ready`. If they do, restart your PC — BytePulse will now start automatically at every login.
 
-### 7. Migrate existing data to SQLite
+---
 
-If you have existing CSV data from a previous run, sync it to the database once:
+### Step 8 — Migrate existing data (if applicable)
+
+If you have existing CSV data from a previous run and want to sync it to the SQLite database, run this once:
 
 ```bash
 python -m scripts.migrate_csv_to_db
 ```
+
+You can skip this step if you're setting up BytePulse for the first time.
 
 ---
 
@@ -246,7 +345,7 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 > ⚠️ **Do not open `usage_log.csv` in Excel while the tracker is running.** This locks the file and causes save failures. To view data safely, copy it first:
 > ```powershell
 > copy "data\usage_log.csv" "%USERPROFILE%\Desktop\usage_copy.csv"
-> 
+> ```
 
 ### `data/usage_log.json`
 
@@ -266,9 +365,9 @@ All three files live in `data/` and stay in sync — if one write fails, the oth
 
 ### `data/bytepulse.db`
 
-These is SQLite database with a `sessions` table
- 
- ### Querying the Database
+This is a SQLite database with a `sessions` table.
+
+### Querying the Database
 
 BytePulse stores all session data in a local SQLite database at `data/bytepulse.db`. You can query it directly from the terminal:
 
@@ -376,13 +475,12 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 If BytePulse saved you from blowing your data cap, consider:
 
--  Starring the repository
--  Forking it to contribute
--  Opening issues or suggesting features
+- Starring the repository
+- Forking it to contribute
+- Opening issues or suggesting features
 
 ---
 
 <div align="center">
 <sub>Built for Windows · No cloud · Your data stays yours</sub>
 </div>
-
