@@ -123,28 +123,6 @@ pythonw.exe src\tracker.py
 
 All data saved automatically in `data/` folder:
 
-```
-BytePulse/
-├── data/
-│   ├── usage_log.csv        ← Session data (CSV)
-│   ├── usage_log.json       ← Session data (JSON)
-│   ├── bytepulse.db         ← SQLite database
-│   └── tracker.log          ← Activity log
-├── logs/
-│   └── (application logs)
-├── setup/
-│   ├── README.md            ← This file
-│   ├── setup_bytepulse.py   ← Python setup
-│   └── setup_bytepulse.bat  ← Batch setup
-├── launch_bytepulse.bat     ← Quick launcher
-├── src/
-│   ├── tray.py              ← System tray icon
-│   ├── tracker.py           ← WiFi monitoring
-│   ├── alerts.py            ← Data cap alerts
-│   └── ... (other files)
-└── ... (other files)
-```
-
 ---
 
 ## ⚙️ Task Scheduler
@@ -349,42 +327,14 @@ cat data/tracker.log
 sqlite3 data/bytepulse.db "SELECT COUNT(*) FROM sessions;"
 ```
 
-**Report issues:**
-- GitHub: [github.com/mosesamwoma/BytePulse/issues](https://github.com/mosesamwoma/BytePulse/issues)
-
 ---
 
-## 🎓 For Developers
 
-Want to customize BytePulse?
-
-**Project structure:**
-```
-src/
-├── tray.py           — System tray icon + menu
-├── tracker.py        — WiFi session monitoring
-├── alerts.py         — Data cap notifications
-├── analyzer.py       — Data analysis
-├── anomaly.py        — Anomaly detection
-└── forecaster.py     — 7-day forecasting
-
-database/
-└── database.py       — SQLite operations
-
-app.py                — Streamlit dashboard
-```
 
 **Key entry points:**
 - `src/tray.py:run_tray()` — Starts tray icon
 - `src/tracker.py:track_usage()` — Starts tracking
 - `app.py` — Dashboard (run with `streamlit run app.py`)
-
----
-
-## 📄 License
-
-MIT License — See LICENSE file
-
 ---
 
 <div align="center">
