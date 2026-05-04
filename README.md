@@ -1,113 +1,3 @@
-# BytePulse
-
-**See exactly how your internet data is used — locally, silently, and privately.**
-
-Track every WiFi session, detect heavy usage, and visualize patterns with zero cloud involvement.
-
----
-
-## Overview
-
-BytePulse runs silently in the background. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV, JSON, and SQLite database at regular intervals.
-
-No cloud. No subscriptions. No tracking. Just clean local data that belongs to you.
-
-**What it tracks:**
-
-| Field | Description |
-|---|---|
-| `start_time` / `end_time` | Session timestamps |
-| `duration_minutes` | How long you were connected |
-| `bytes_sent` / `bytes_received` | Raw transfer counts |
-| `usage_MB` | Total data used per session |
-
----
-
-## Features
-
-- **Silent background tracking** — runs at login via Windows Task Scheduler, no terminal window
-- **Triple-format logging** — every session saved to CSV, JSON, and SQLite simultaneously
-- **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
-- **Fault tolerance** — if CSV is locked (e.g. open in Excel), data falls back to a `.pending` file and merges on next run
-- **System tray icon** — right-click to open dashboard, stop tracker, or quit
-- **Streamlit dashboard** — daily, weekly, and monthly views with hourly heatmap
-- **Anomaly detection** — flags sessions with unusually high usage via Z-score
-- **Data cap alerts** — Windows toast notifications at 80% and 100% of your daily cap
-- **7-day usage forecast** — Prophet-powered time series forecasting
-
----
-
-## Requirements
-
-- Windows 10 or 11
-- [Python 3.11](https://www.python.org/downloads/release/python-3110/) — check **"Add Python to PATH"** during install
-
-> ⚠️ **Use Python 3.11 specifically.** `psutil` has known compatibility issues with Python 3.12+. Using any other version may cause install or runtime errors.
-
----
-
-## Getting Started
-
-> 💡 **New to this?** Follow every step in order. Don't skip anything — each step builds on the last.
-
----
-
-### Step 1 — Check your Python version
-
-Before doing anything else, confirm you have the right Python version installed.
-
-Open PowerShell (`Win + S` → type `powershell` → press Enter) and run:
-
-```powershell
-python --version
-```
-
-You should see:
-
-```
-Python 3.11.x
-```
-
-If you see `3.12`, `3.13`, or anything other than `3.11`, you need to install Python 3.11 first. Download it from [python.org](https://www.python.org/downloads/release/python-3110/). During installation, **check the box that says "Add Python to PATH"** — this is important.
-
-After installing, close PowerShell and reopen it, then run `python --version` again to confirm.
-
----
-
-### Step 2 — Clone the repository
-
-This downloads the BytePulse code to your computer.
-
-In PowerShell, run:
-
-```bash
-git clone https://github.com/mosesamwoma/BytePulse.git
-cd BytePulse
-```
-
-After running `cd BytePulse`, your terminal is now inside the BytePulse folder. All future commands assume you are in this folder.
-
-> 💡 **Don't have Git?** Download it from [git-scm.com](https://git-scm.com/download/win), install it with default settings, then reopen PowerShell and try again.
-
----
-
-### Step 3 — Create a virtual environment
-
-A virtual environment is an isolated Python workspace for BytePulse. It keeps BytePulse's dependencies separate from other Python projects on your system so nothing conflicts.
-
-Run:
-
-```powershell
-python -m venv venv
-venv\Scripts\activate
-```
-
-After the second command, your terminal prompt will change to start with `(venv)`, like this:
-
-```
-(venv) PS C:\Users\YourName\BytePulse>
-```
-
 That `(venv)` prefix means the virtual environment is active. **You must see this before running any further commands.**
 
 > ⚠️ **Every time you open a new terminal window**, you need to navigate to the BytePulse folder and run `venv\Scripts\activate` again before working on BytePulse. The `(venv)` prefix does not persist between sessions.
@@ -136,134 +26,38 @@ This will download and install several packages — it may take a minute or two.
 
 ---
 
-### Step 5 — Configure the launcher
-
-BytePulse uses a `.bat` file to start the tracker. You need to tell it where your files are.
-
-**5a.** In File Explorer, navigate to your BytePulse folder. Click the address bar at the top — it will show your full path, something like:
-
-```
-C:\Users\YourName\BytePulse
-```
-
-Copy that path. You'll need it in a moment.
-
-**5b.** In the BytePulse folder, find the file called `start_tracker.example.bat`. Make a copy of it and rename the copy to `start_tracker.bat`.
-
-> 💡 **Can't see the `.bat` extension?** Open any folder → click the **View** tab at the top → check **File name extensions**. This prevents accidentally saving the file as `start_tracker.bat.bat`.
-
-**5c.** Right-click `start_tracker.bat` → **Open with** → **Notepad**.
-
-Find these two lines near the top:
-
-```bat
-cd /d "C:\Users\YourName\BytePulse"
-set PYTHONW=C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe
-```
-
-Replace `C:\Users\YourName\BytePulse` with the actual path you copied in step 5a. For example, if your path is `C:\Users\Moses\Documents\BytePulse`, the lines should become:
-
-```bat
-cd /d "C:\Users\Moses\Documents\BytePulse"
-set PYTHONW=C:\Users\Moses\Documents\BytePulse\venv\Scripts\pythonw.exe
-```
-
-Save the file and close Notepad.
-
----
-
-### Step 6 — Run manually to test
+### Step 5 — Run manual tests
 
 Before setting up automatic startup, make sure everything works by running BytePulse manually.
 
 In PowerShell (with `(venv)` active):
 
 ```powershell
-.\start_tracker.bat
+python src\tray.py
+python src\tracker.py
 ```
 
 A BytePulse icon should appear in your system tray (the small icons in the bottom-right corner of your taskbar). If you don't see it, click the `^` arrow in the taskbar to reveal hidden tray icons.
 
-**Verify the tracker is actually running** — don't wait 30 minutes to find out it crashed:
+**Verify the tracker is actually running**:
 
 ```powershell
-Get-Process pythonw
+Get-Process python
 ```
 
-You should see exactly **two** `pythonw` processes listed (one for the tracker, one for the tray icon). If you see zero, check the [Troubleshooting](#troubleshooting) section.
-
-After 30 minutes, a row of data should appear in `data/usage_log.csv`. You can also check the database directly:
-
-```powershell
-python -c "import sqlite3; conn = sqlite3.connect('data/bytepulse.db'); print(conn.execute('SELECT COUNT(*) FROM sessions').fetchone()); conn.close()"
-```
-
-If it prints `(1,)` or higher, your data is being saved correctly. If it prints `(0,)` after 30 minutes, check [Troubleshooting](#troubleshooting).
+You should see Python processes running. After 30 minutes, a row of data should appear in `data/usage_log.csv`.
 
 ---
 
-### Step 7 — Enable silent startup (optional)
+### Step 6 — Enable silent startup (optional)
 
 This step makes BytePulse start automatically every time you log into Windows, with no visible window. This is optional but recommended for continuous tracking.
 
-> ⚠️ This step requires running PowerShell as Administrator. The commands register tasks with Windows Task Scheduler.
-
-**7a.** First, get the exact path to `pythonw.exe` inside your virtual environment. In PowerShell, run:
-
-```powershell
-(Get-Item "venv\Scripts\pythonw.exe").FullName
-```
-
-Copy the output. It will look something like:
-
-```
-C:\Users\Moses\Documents\BytePulse\venv\Scripts\pythonw.exe
-```
-
-**7b.** Open a new PowerShell window **as Administrator**: press `Win + S`, type `powershell`, right-click the result, and select **Run as administrator**. Click Yes on the prompt.
-
-**7c.** In the Administrator PowerShell window, paste the block below. Before pasting, update the two lines at the top (`$base` and `$pythonw`) with your actual paths from steps 5a and 7a:
-
-```powershell
-# ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
-$base    = "C:\Users\YourName\BytePulse"                               # ← your BytePulse folder
-$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 7a
-# ─────────────────────────────────────────────────────────────────────────────
-
-if (-not (Test-Path $pythonw)) { Write-Error "pythonw.exe not found: $pythonw"; exit 1 }
-if (-not (Test-Path $base))    { Write-Error "BytePulse folder not found: $base"; exit 1 }
-
-$settingsTray    = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
-$settingsTracker = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew
-
-$trigger = New-ScheduledTaskTrigger -AtLogOn
-Register-ScheduledTask -TaskName "BytePulse-Tray" `
-    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tray.py`"" -WorkingDirectory $base) `
-    -Trigger $trigger -Settings $settingsTray -RunLevel Highest -Force
-Write-Host "✅ BytePulse-Tray registered"
-
-$triggerTracker       = New-ScheduledTaskTrigger -AtLogOn
-$triggerTracker.Delay = "PT10S"
-Register-ScheduledTask -TaskName "BytePulse-Tracker" `
-    -Action (New-ScheduledTaskAction -Execute $pythonw -Argument "`"$base\src\tracker.py`"" -WorkingDirectory $base) `
-    -Trigger $triggerTracker -Settings $settingsTracker -RunLevel Highest -Force
-Write-Host "✅ BytePulse-Tracker registered (10s delay)"
-```
-
-You should see two green checkmarks confirming the tasks were registered.
-
-**7d.** Confirm both tasks are ready:
-
-```powershell
-Get-ScheduledTask -TaskName "BytePulse-Tracker"
-Get-ScheduledTask -TaskName "BytePulse-Tray"
-```
-
-Both should show `State: Ready`. If they do, restart your PC — BytePulse will now start automatically at every login.
+See [Setup Guide](./setup/SETUP.md) for detailed Task Scheduler registration instructions.
 
 ---
 
-### Step 8 — Migrate existing data (if applicable)
+### Step 7 — Migrate existing data (if applicable)
 
 If you have existing CSV data from a previous run and want to sync it to the SQLite database, run this once:
 
@@ -416,30 +210,25 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 
 ## Troubleshooting
 
-**`Get-Process pythonw` shows nothing after running `start_tracker.bat`**
-- Make sure your virtual environment is activated: `venv\Scripts\activate`
-- Check that the paths in `start_tracker.bat` match your actual BytePulse folder
-- Run `start_tracker.bat` directly by double-clicking it and look for any error message in the terminal
+**Tracker doesn't start after running setup**
+- Check `data/tracker.log` for error messages
+- Make sure Python 3.11 is installed: `python --version`
+- Verify Task Scheduler tasks are registered: `Get-ScheduledTask -TaskName "BytePulse-*"`
 
 **`psutil` install fails or crashes at runtime**
 - Confirm you're on Python 3.11: `python --version`
-- If you see 3.12 or higher, install 3.11 from [python.org](https://www.python.org/downloads/release/python-3110/) and recreate the virtual environment
-
-**Task Scheduler tasks registered but BytePulse doesn't start on login**
-- Confirm both tasks show `State: Ready` in Task Scheduler (`Win + S` → Task Scheduler)
-- Make sure the `pythonw.exe` path in the task points to `venv\Scripts\pythonw.exe` inside your BytePulse folder
-- Check that you ran the registration script as Administrator
+- If you see 3.12 or higher, install 3.11 from [python.org](https://www.python.org/downloads/release/python-3110/)
 
 **No data after 30 minutes**
 - Confirm you're connected to WiFi (BytePulse only tracks WiFi, not Ethernet)
-- Check the `data/` folder exists — create it manually if not: `mkdir data`
-- Look for a `data/usage_log.pending` file — this means the CSV was locked during a save
+- Check `data/tracker.log` for errors
+- Manually run the tracker to see real-time output: `python src/tracker.py`
 
 **Dashboard shows "Not enough data to forecast"**
 - The forecast requires at least 10 days of data. Keep the tracker running and check back later.
 
 **Tray icon doesn't appear**
-- Check Task Manager for `pythonw` processes — if they exist, the icon may be hidden in the system tray overflow area (click the `^` arrow in the taskbar)
+- Check Task Manager for Python processes — if they exist, the icon may be hidden in the system tray overflow area (click the `^` arrow in the taskbar)
 
 ---
 
@@ -449,7 +238,6 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - WiFi only — Ethernet and mobile hotspot sessions are not tracked
 - Total usage only — no per-app or per-SSID breakdown
 - Requires Python 3.11 specifically
-- Opening `usage_log.csv` in Excel while the tracker runs may cause save failures
 
 ---
 

@@ -21,4 +21,4 @@ echo   - Open the dashboard
 echo   - Stop the tracker
 echo   - Quit
 echo.
-pause
+timeout /t 2 /nobreak

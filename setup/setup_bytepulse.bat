@@ -16,7 +16,7 @@ if errorlevel 1 (
     echo.
     echo This script needs admin rights to register auto-startup tasks.
     echo.
-    echo A new admin PowerShell window will open.
+    echo A new admin window will open.
     echo Please click 'Yes' on the UAC security prompt.
     echo.
     pause
@@ -30,7 +30,7 @@ if errorlevel 1 (
 )
 
 set "SCRIPT_DIR=%~dp0"
-cd /d "%SCRIPT_DIR%"
+cd /d "%SCRIPT_DIR%.."
 
 cls
 echo.
@@ -115,11 +115,18 @@ if %ADMIN%==1 (
     REM Get pythonw.exe path
     for /f "tokens=*" %%i in ('python -c "from pathlib import Path; import sys; print(str(Path(sys.executable).parent / 'pythonw.exe'))"') do set "PYTHONW=%%i"
     
+    REM Get current directory for Task Scheduler
+    set "PROJECT_ROOT=%CD%"
+    
     echo       Registering BytePulse-Tray...
     powershell -NoProfile -Command ^
-        "$trigger = New-ScheduledTaskTrigger -AtLogOn;" ^
-        "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew;" ^
-        "Register-ScheduledTask -TaskName 'BytePulse-Tray' -Action (New-ScheduledTaskAction -Execute '!PYTHONW!' -Argument '\"%SCRIPT_DIR%src\tray.py\"' -WorkingDirectory '%SCRIPT_DIR%') -Trigger $trigger -Settings $settings -RunLevel Highest -Force" >nul 2>&1
+        "$pythonw = '!PYTHONW!'; " ^
+        "$base = '!PROJECT_ROOT!'; " ^
+        "$trigger = New-ScheduledTaskTrigger -AtLogOn; " ^
+        "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew; " ^
+        "$action = New-ScheduledTaskAction -Execute $pythonw -Argument \"`\"$base\src\tray.py`\"\" -WorkingDirectory $base; " ^
+        "Register-ScheduledTask -TaskName 'BytePulse-Tray' -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null; " ^
+        "Write-Host 'OK'" >nul 2>&1
     
     if !ERRORLEVEL!==0 (
         echo [OK] BytePulse-Tray registered
@@ -131,10 +138,14 @@ if %ADMIN%==1 (
     
     echo       Registering BytePulse-Tracker (10s delay)...
     powershell -NoProfile -Command ^
-        "$trigger = New-ScheduledTaskTrigger -AtLogOn;" ^
-        "$trigger.Delay = 'PT10S';" ^
-        "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew;" ^
-        "Register-ScheduledTask -TaskName 'BytePulse-Tracker' -Action (New-ScheduledTaskAction -Execute '!PYTHONW!' -Argument '\"%SCRIPT_DIR%src\tracker.py\"' -WorkingDirectory '%SCRIPT_DIR%') -Trigger $trigger -Settings $settings -RunLevel Highest -Force" >nul 2>&1
+        "$pythonw = '!PYTHONW!'; " ^
+        "$base = '!PROJECT_ROOT!'; " ^
+        "$trigger = New-ScheduledTaskTrigger -AtLogOn; " ^
+        "$trigger.Delay = 'PT10S'; " ^
+        "$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew; " ^
+        "$action = New-ScheduledTaskAction -Execute $pythonw -Argument \"`\"$base\src\tracker.py`\"\" -WorkingDirectory $base; " ^
+        "Register-ScheduledTask -TaskName 'BytePulse-Tracker' -Action $action -Trigger $trigger -Settings $settings -RunLevel Highest -Force | Out-Null; " ^
+        "Write-Host 'OK'" >nul 2>&1
     
     if !ERRORLEVEL!==0 (
         echo [OK] BytePulse-Tracker registered (10s delay)
@@ -151,14 +162,15 @@ if %ADMIN%==1 (
 
 REM [7/8] Create launcher
 echo [7/8] Creating launcher shortcut...
+set "LAUNCHER_PATH=%CD%\launch_bytepulse.bat"
 (
     echo @echo off
     echo REM BytePulse Launcher
-    echo cd /d "%SCRIPT_DIR%"
+    echo cd /d "%CD%"
     echo start "" pythonw.exe src\tray.py
     echo start "" pythonw.exe src\tracker.py
     echo exit
-) > "%SCRIPT_DIR%launch_bytepulse.bat"
+) > "%LAUNCHER_PATH%"
 echo [OK] Created: launch_bytepulse.bat
 echo.
 
@@ -188,7 +200,7 @@ echo.
 REM Success
 color 0A
 echo ======================================================================
-echo ^! BytePulse Setup Complete!
+echo ! BytePulse Setup Complete!
 echo ======================================================================
 echo.
 echo What was installed:
@@ -206,24 +218,20 @@ echo   Option 1: Double-click launch_bytepulse.bat
 echo   Option 2: python src\tray.py + python src\tracker.py (separately)
 echo   Option 3: Auto-starts on boot (if admin registered tasks)
 echo.
-echo What happens when you launch:
-echo   1. System tray icon appears in taskbar
-echo   2. WiFi tracking starts in background
-echo   3. Right-click tray icon for menu:
-echo      - Status: Shows tracker running
-echo      - Open Dashboard: View usage stats
-echo      - Stop Tracker: Stop background monitoring
-echo      - Quit: Close everything
+echo System tray icon menu:
+echo   - Status: Shows if tracker is running
+echo   - Open Dashboard: View usage stats at http://localhost:8501
+echo   - Stop Tracker: Stop background monitoring
+echo   - Quit: Close everything
 echo.
-echo Data saved to:
-echo   * %SCRIPT_DIR%data\usage_log.csv
-echo   * %SCRIPT_DIR%data\usage_log.json
-echo   * %SCRIPT_DIR%data\bytepulse.db
-echo   * %SCRIPT_DIR%data\tracker.log
+echo Data locations:
+echo   * %CD%\data\usage_log.csv
+echo   * %CD%\data\bytepulse.db
+echo   * %CD%\data\tracker.log
 echo.
 if %ADMIN%==0 (
     echo To enable auto-startup:
-    echo   1. Right-click setup_bytepulse.bat
+    echo   1. Right-click setup\setup_bytepulse.bat
     echo   2. Select "Run as administrator"
     echo   3. Run again
     echo.
@@ -236,7 +244,7 @@ if /i "%LAUNCH%"=="y" (
     echo.
     echo Starting BytePulse...
     echo.
-    start "" launch_bytepulse.bat
+    start "" "%LAUNCHER_PATH%"
 ) else (
     echo.
     echo Setup complete! Launch anytime with: launch_bytepulse.bat
