@@ -46,6 +46,12 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ---
 
+## Quick Setup (Alternative)
+
+For one-click automated setup, see [setup/SETUP.md](setup/README.md)
+
+---
+
 ## Getting Started
 
 > 💡 **New to this?** Follow every step in order. Don't skip anything — each step builds on the last.
