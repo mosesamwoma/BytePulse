@@ -25,7 +25,10 @@ def start_all():
     
     if not venv_python.exists():
         print("[ERROR] Virtual environment not found!")
-        print("Run: python setup.py")
+        if sys.platform == "win32":
+            print(r"Run: setup\setup_bytepulse.bat")
+        else:
+            print("Run: python setup/setup_bytepulse.py")
         sys.exit(1)
     
     try:
