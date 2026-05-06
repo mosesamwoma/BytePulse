@@ -46,7 +46,7 @@ def start_all():
         
         print("[3/3] Starting dashboard...")
         subprocess.Popen(
-            [str(venv_python), str(project_root / "app.py")],
+            [str(venv_python), "-m", "streamlit", "run", str(project_root / "app.py")],
             cwd=project_root
         )
         
