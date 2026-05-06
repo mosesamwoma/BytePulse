@@ -7,11 +7,9 @@ def start_all():
     project_root = Path(__file__).parent
     
     data_dir = project_root / "data"
-    logs_dir = project_root / "logs"
     gitkeep = data_dir / ".gitkeep"
     
     data_dir.mkdir(exist_ok=True)
-    logs_dir.mkdir(exist_ok=True)
     
     if not gitkeep.exists():
         gitkeep.touch()
