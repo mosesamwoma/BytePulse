@@ -98,9 +98,9 @@ if not exist "requirements.txt" (
     exit /b 1
 )
 echo       Upgrading pip...
-python -m pip install --upgrade pip >nul 2>&1
+"%VENV_PYTHON%" -m pip install --upgrade pip >nul 2>&1
 echo       Installing packages...
-python -m pip install -r requirements.txt >nul 2>&1
+"%VENV_PYTHON%" -m pip install -r requirements.txt >nul 2>&1
 if errorlevel 1 (
     color 0E
     echo [WARNING] Some packages failed to install
@@ -122,7 +122,7 @@ echo.
 
 REM [6/9] Initialize database
 echo [6/9] Initializing database...
-python -c "import sys; sys.path.insert(0, '.'); from database.database import init_db; init_db()" >nul 2>&1
+"%VENV_PYTHON%" -c "import sys; sys.path.insert(0, '.'); from database.database import init_db; init_db()" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Database will auto-create on first run
 ) else (

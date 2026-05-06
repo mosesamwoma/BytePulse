@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 def check_python():
-    """Verify Python 3.7+ is installed"""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 7):
         print("[ERROR] Python 3.7+ required")
@@ -12,7 +11,6 @@ def check_python():
     print(f"[OK] Python {version.major}.{version.minor}.{version.micro}")
 
 def create_venv():
-    """Create virtual environment if it doesn't exist"""
     print("[2/8] Creating virtual environment...")
     venv_dir = Path("venv")
     
@@ -30,12 +28,10 @@ def create_venv():
         return False
 
 def get_venv_python():
-    """Get path to Python executable in venv"""
     venv_python = Path("venv") / ("Scripts" if sys.platform == "win32" else "bin") / ("python.exe" if sys.platform == "win32" else "python")
     return str(venv_python)
 
 def install_dependencies():
-    """Install packages from requirements.txt using venv Python"""
     print("[3/8] Installing dependencies...")
     req_file = Path("requirements.txt")
     
@@ -61,7 +57,6 @@ def install_dependencies():
         return False
 
 def create_directories():
-    """Create data and logs directories"""
     print("[4/8] Creating directories...")
     data_dir = Path("data")
     logs_dir = Path("logs")
@@ -76,7 +71,6 @@ def create_directories():
     print("[OK] Directories created")
 
 def init_database():
-    """Initialize SQLite database"""
     print("[5/8] Initializing database...")
     venv_python = get_venv_python()
     
@@ -91,7 +85,6 @@ def init_database():
         return True
 
 def verify_files():
-    """Verify all required project files exist"""
     print("[6/8] Final verification...")
     required = ["main.py", "app.py", "src/tracker.py", "src/tray.py"]
     
@@ -103,7 +96,6 @@ def verify_files():
     print("[OK] All required files present")
 
 def create_launcher():
-    """Create launcher batch file"""
     print("[7/8] Creating launcher shortcut...")
     launcher_path = Path("launch_bytepulse.bat")
     
@@ -124,7 +116,6 @@ pause
         return False
 
 def print_summary():
-    """Print setup completion summary"""
     print()
     print("=" * 70)
     print("! BytePulse Setup Complete!")
@@ -156,7 +147,6 @@ def print_summary():
     print()
 
 def setup():
-    """Run complete setup"""
     print()
     print("=" * 70)
     print("BytePulse Setup")
