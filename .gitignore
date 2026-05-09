@@ -1,5 +1,4 @@
 start_tracker.bat
-*.vbs
 __pycache__/
 *.pyc
 *.pyo
