@@ -13,8 +13,8 @@ import tempfile
 import shutil
 import threading
 import msvcrt
-from database.database import init_db, save_to_db
-from src.anomaly import detect_anomalies
+from shared.database.database import init_db, save_to_db
+from shared.core.anomaly import detect_anomalies
 from src.alerts import check_alerts
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
