@@ -1,10 +1,10 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from src.analyzer import load_data, summarize
-from src.anomaly import detect_anomalies
+from shared.core.analyzer import load_data, summarize
+from shared.core.anomaly import detect_anomalies
 from src.alerts import get_daily_usage_sqlite, get_monthly_usage_sqlite, CAP_MB, MONTHLY_CAP_MB, WARN_THRESHOLD
-from src.forecaster import forecast
+from shared.core.forecaster import forecast
 from datetime import date, datetime
 
 st.set_page_config(page_title="BytePulse", layout="wide")
