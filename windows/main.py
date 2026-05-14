@@ -29,14 +29,14 @@ def start_all():
         sys.exit(1)
     
     try:
-        print("[1/3] Starting tray app...")
+        print("[1/2] Starting system tray icon...")
         subprocess.Popen(
             [str(venv_python), str(project_root / "src" / "tray.py")],
             cwd=project_root
         )
         time.sleep(1)
         
-        print("[2/3] Starting tracker (10s delay)...")
+        print("[2/2] Starting background tracker (10s delay)...")
         time.sleep(10)
         subprocess.Popen(
             [str(venv_python), str(project_root / "src" / "tracker.py")],
@@ -44,14 +44,8 @@ def start_all():
         )
         time.sleep(1)
         
-        print("[3/3] Starting dashboard...")
-        subprocess.Popen(
-            [str(venv_python), str(project_root / "app.py")],
-            cwd=project_root
-        )
-        
         print("\n✓ BytePulse started")
-        print("  Tray: System tray icon (bottom-right)")
+        print("  Tray icon: System tray (bottom-right corner)")
         print("  Dashboard: http://localhost:8501")
         print("  Logs: data/tracker.log")
         

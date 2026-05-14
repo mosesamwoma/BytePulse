@@ -5,9 +5,11 @@ from pathlib import Path
 
 def check_python():
     version = sys.version_info
-    if version.major < 3 or (version.major == 3 and version.minor < 7):
-        print("[ERROR] Python 3.7+ required")
+    if version.major < 3 or (version.major == 3 and version.minor < 11):
+        print("[ERROR] Python 3.11 required")
         sys.exit(1)
+    if version.major == 3 and version.minor > 11:
+        print("[WARNING] Python 3.12+ detected. psutil may have compatibility issues.")
     print(f"[OK] Python {version.major}.{version.minor}.{version.micro}")
 
 def create_venv():
@@ -76,7 +78,7 @@ def init_database():
     
     try:
         subprocess.run([venv_python, "-c", 
-                       "import sys; sys.path.insert(0, '.'); from database.database import init_db; init_db()"],
+                       "import sys; sys.path.insert(0, '..'); from shared.database.database import init_db; init_db()"],
                       capture_output=True, check=True, cwd=Path.cwd())
         print("[OK] Database initialized")
         return True
@@ -101,10 +103,55 @@ def create_launcher():
     
     launcher_content = """@echo off
 REM BytePulse Launcher
+REM Activates venv, handles process cleanup, starts tray + tracker with staggered startup
+
 cd /d "%~dp0"
-call venv\\Scripts\\activate.bat
-python main.py
-pause
+
+if not exist venv (
+    color 0C
+    echo [ERROR] Virtual environment not found
+    echo Run setup.py first to create venv and install dependencies
+    color 0F
+    pause
+    exit /b 1
+)
+
+if not exist data (
+    mkdir data
+)
+
+call venv\Scripts\activate.bat
+if errorlevel 1 (
+    color 0C
+    echo [ERROR] Failed to activate virtual environment
+    color 0F
+    pause
+    exit /b 1
+)
+
+set PYTHONW=%CD%\venv\Scripts\pythonw.exe
+
+if exist data\tracker.lock (
+    for /f "tokens=1" %%%%i in (data\tracker.lock) do (
+        taskkill.exe /F /PID %%%%i >nul 2>&1
+    )
+    del /f data\tracker.lock >nul 2>&1
+)
+
+if exist data\tray.lock (
+    for /f "tokens=1" %%%%i in (data\tray.lock) do (
+        taskkill.exe /F /PID %%%%i >nul 2>&1
+    )
+    del /f data\tray.lock >nul 2>&1
+)
+
+timeout.exe /t 2 /nobreak >nul 2>&1
+
+start "" "%PYTHONW%" src\tray.py
+timeout.exe /t 5 /nobreak >nul 2>&1
+start "" "%PYTHONW%" src\tracker.py
+
+echo %date% %time% BytePulse started >> data\startup.log
 """
     
     try:

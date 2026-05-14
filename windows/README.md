@@ -233,7 +233,7 @@ C:\Users\Moses\Documents\BytePulse\venv\Scripts\pythonw.exe
 ```powershell
 # ── UPDATE THESE TWO LINES ───────────────────────────────────────────────────
 $base    = "C:\Users\YourName\BytePulse"                               # ← your BytePulse folder
-$pythonw = "C:\Users\YourName\BytePulse\venv\Scripts\pythonw.exe"     # ← from step 7a
+$pythonw = "C:\Users\YourName\BytePulse\windows\venv\Scripts\pythonw.exe"     # ← from step 7a
 # ─────────────────────────────────────────────────────────────────────────────
 
 if (-not (Test-Path $pythonw)) { Write-Error "pythonw.exe not found: $pythonw"; exit 1 }
@@ -291,9 +291,9 @@ Or right-click the system tray icon → **Open Dashboard**. Opens at `http://loc
 
 Switch between **Daily**, **Weekly**, and **Monthly** views from the sidebar. The **hourly heatmap**, **7-day forecast**, **anomaly detection**, and **data cap** sections are only visible in the Daily view.
 
-![Dashboard overview](assets/1.png)
+![Dashboard overview](/assets/1.png)
 
-![Peak hours and detailed data](assets/3.png)
+![Peak hours and detailed data](/assets/3.png)
 
 ---
 
@@ -314,7 +314,7 @@ BytePulse uses **Prophet** (Meta's time series forecasting library) to predict y
 
 The model retrains automatically every time the dashboard loads — no manual steps needed.
 
-![7-Day Usage Forecast](assets/6.png)
+![7-Day Usage Forecast](/assets/6.png)
 
 ---
 
@@ -458,35 +458,3 @@ Unregister-ScheduledTask -TaskName "BytePulse-Tray"    -Confirm:$false
 - Opening `usage_log.csv` in Excel while the tracker runs may cause save failures
 
 ---
-
-## Roadmap
-
-- [ ] Per-SSID usage breakdown
-- [ ] ISP billing cycle alignment
-- [ ] Cross-platform portability (macOS / Linux)
-
----
-
-## Contributing
-
-1. Fork the repo and clone it
-2. Create a branch: `git checkout -b feature/your-feature`
-3. Make your changes and commit: `git commit -m "describe change"`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request targeting `main` on `mosesamwoma/BytePulse`
-
----
-
-## Support This Project
-
-If BytePulse saved you from blowing your data cap, consider:
-
-- Starring the repository
-- Forking it to contribute
-- Opening issues or suggesting features
-
----
-
-<div align="center">
-<sub>Built for Windows · No cloud · Your data stays yours</sub>
-</div>
