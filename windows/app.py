@@ -1,6 +1,11 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from shared.core.analyzer import load_data, summarize
 from shared.core.anomaly import detect_anomalies
 from src.alerts import get_daily_usage_sqlite, get_monthly_usage_sqlite, CAP_MB, MONTHLY_CAP_MB, WARN_THRESHOLD
