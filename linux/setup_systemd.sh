@@ -15,15 +15,30 @@ mkdir -p "$PROJECT_DIR/logs"
 chown -R "$USERNAME:$USERNAME" "$PROJECT_DIR"
 
 SERVICE_FILE="/etc/systemd/system/bytepulse.service"
-TIMER_FILE="/etc/systemd/system/bytepulse.timer"
 
-sed "s|__PROJECT_DIR__|$PROJECT_DIR|g; s|__USERNAME__|$USERNAME|g" "$PROJECT_DIR/systemd/bytepulse.service.template" > "$SERVICE_FILE"
-sed "s|__PROJECT_DIR__|$PROJECT_DIR|g; s|__USERNAME__|$USERNAME|g" "$PROJECT_DIR/systemd/bytepulse.timer.template" > "$TIMER_FILE"
+cat > "$SERVICE_FILE" << EOF
+[Unit]
+Description=BytePulse WiFi Data Tracker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=$USERNAME
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/src/tracker.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 systemctl daemon-reload
 
 echo "[✓] Service installed at $SERVICE_FILE"
-echo "[✓] Timer installed at $TIMER_FILE"
 echo ""
 echo "To start tracking:"
 echo "  sudo systemctl start bytepulse"

@@ -4,8 +4,9 @@ import sqlite3
 import time
 from datetime import date, datetime
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
@@ -50,22 +51,22 @@ def check_alerts():
     usage_pct = usage_MB / CAP_MB
 
     if usage_pct >= 1.0 and not alert_states["limit"]:
-        print(f"⚠️  BytePulse — Daily Cap Reached: {usage_MB:.0f} MB ({usage_pct*100:.0f}%)")
+        print(f"⚠️  [ALERT] Daily Cap Reached: {usage_MB:.0f} MB ({usage_pct*100:.0f}%)")
         alert_states["limit"] = True
 
     elif usage_pct >= WARN_THRESHOLD and not alert_states["warn"] and not alert_states["limit"]:
-        print(f"⚠️  BytePulse — Daily Data Warning: 80% of daily cap used ({usage_MB:.0f} MB)")
+        print(f"⚠️  [WARNING] Daily Data Warning: 80% of daily cap used ({usage_MB:.0f} MB)")
         alert_states["warn"] = True
 
     monthly_MB = get_monthly_usage_sqlite()
     monthly_pct = monthly_MB / MONTHLY_CAP_MB
 
     if monthly_pct >= 1.0 and not alert_states["monthly_limit"]:
-        print(f"⚠️  BytePulse — Monthly Cap Reached: {monthly_MB:.0f} MB of {MONTHLY_CAP_MB:.0f} MB")
+        print(f"⚠️  [ALERT] Monthly Cap Reached: {monthly_MB:.0f} MB of {MONTHLY_CAP_MB:.0f} MB")
         alert_states["monthly_limit"] = True
 
     elif monthly_pct >= MONTHLY_WARN_THRESHOLD and not alert_states["monthly_warn"] and not alert_states["monthly_limit"]:
-        print(f"⚠️  BytePulse — Monthly Data Warning: 80% of monthly cap used ({monthly_MB:.0f} MB)")
+        print(f"⚠️  [WARNING] Monthly Data Warning: 80% of monthly cap used ({monthly_MB:.0f} MB)")
         alert_states["monthly_warn"] = True
 
 if __name__ == "__main__":

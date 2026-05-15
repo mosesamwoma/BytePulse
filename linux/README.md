@@ -5,6 +5,7 @@ Track WiFi data usage locally on Linux with zero cloud involvement.
 ## Features
 
 - Silent background tracking via systemd
+- System tray icon (GNOME, KDE, XFCE compatible)
 - Triple-format logging (CSV, JSON, SQLite)
 - Data cap alerts
 - 7-day usage forecasting
@@ -15,39 +16,38 @@ Track WiFi data usage locally on Linux with zero cloud involvement.
 
 - Python 3.11
 - Linux with systemd
-- Root access for installation
+- Display server (X11 or Wayland) for tray icon
 
-## Installation
+## Quick Start
 
 ```bash
 cd linux
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-sudo bash setup_systemd.sh
+python3 main.py
 ```
 
 ## Usage
 
-Start tracking:
+**Start tracker:**
 ```bash
-sudo systemctl start bytepulse
-sudo systemctl enable bytepulse
+python3 src/tracker.py
 ```
 
-View dashboard:
+**Start with tray icon and dashboard:**
+```bash
+python3 main.py
+```
+
+**View dashboard:**
 ```bash
 streamlit run app.py
 ```
 
-Check logs:
+**Check logs:**
 ```bash
-journalctl -u bytepulse -f
-```
-
-Stop tracking:
-```bash
-sudo systemctl stop bytepulse
+tail -f data/tracker.log
 ```
 
 ## Data Locations
@@ -57,9 +57,11 @@ sudo systemctl stop bytepulse
 - **JSON**: `data/usage_log.json`
 - **Logs**: `data/tracker.log`
 
-## Configuration
+## Installation with systemd
 
-Edit `src/config.py` to customize:
-- Data caps
-- Alert thresholds
-- Polling interval
+```bash
+sudo bash setup_systemd.sh
+sudo systemctl start bytepulse
+sudo systemctl enable bytepulse
+journalctl -u bytepulse -f
+```

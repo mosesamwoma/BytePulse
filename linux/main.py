@@ -21,23 +21,31 @@ def start_all():
     python_bin = "python3"
 
     try:
-        print("[1/2] Starting background tracker...")
+        print("[1/3] Starting background tracker...")
         subprocess.Popen(
             [python_bin, str(project_root / "src" / "tracker.py")],
             cwd=project_root
         )
         time.sleep(2)
 
-        print("[2/2] Starting alerts service...")
+        print("[2/3] Starting alerts service...")
         subprocess.Popen(
             [python_bin, str(project_root / "src" / "alerts.py")],
             cwd=project_root
         )
         time.sleep(1)
 
+        print("[3/3] Starting system tray icon...")
+        subprocess.Popen(
+            [python_bin, str(project_root / "src" / "tray.py")],
+            cwd=project_root
+        )
+        time.sleep(1)
+
         print("\n✓ BytePulse started")
+        print("  System tray: Check your system tray")
+        print("  Dashboard: http://localhost:8501")
         print("  Logs: data/tracker.log")
-        print("  Data: data/bytepulse.db")
 
     except Exception as e:
         print(f"\n[ERROR] {e}", file=sys.stderr)
