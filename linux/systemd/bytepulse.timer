@@ -1,0 +1,11 @@
+[Unit]
+Description=BytePulse Alerts Timer
+Requires=bytepulse.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
