@@ -1,9 +1,9 @@
 @echo off
-cd /d "."
+cd /d "%~dp0"
 
 if not exist data mkdir data
 
-set PYTHONW=C:\path\to\BytePulse\.venv\Scripts\pythonw.exe
+set PYTHONW=%CD%\venv\Scripts\pythonw.exe
 
 if not exist "%PYTHONW%" (
     echo %date% %time% ERROR: pythonw not found at %PYTHONW% >> data\startup.log
