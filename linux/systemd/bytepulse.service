@@ -1,0 +1,17 @@
+[Unit]
+Description=BytePulse WiFi Data Tracker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USERNAME__
+WorkingDirectory=__PROJECT_DIR__
+ExecStart=__PROJECT_DIR__/venv/bin/python3 __PROJECT_DIR__/src/tracker.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+psutil==5.9.8
+pandas==2.2.2
+matplotlib==3.9.2
+streamlit==1.39.0
+pystray==0.19.5
+Pillow==10.4.0
+prophet==1.1.6
+scikit-learn==1.5.2
+
+# Linux notification library
+notify2==0.3.1
+dbus-python==1.3.2
