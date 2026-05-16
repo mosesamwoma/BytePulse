@@ -12,7 +12,7 @@ cd BytePulse
 python setup/setup_bytepulse.py
 ```
 
-Or double-click: `setup\setup_bytepulse.bat`
+Or double-click: `windows\setup\setup_bytepulse.bat`
 
 Then restart your PC. BytePulse starts automatically.
 

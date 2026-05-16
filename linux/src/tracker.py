@@ -98,7 +98,9 @@ def atomic_json_append(path, record: dict):
             except Exception:
                 pass
             records = []
+
     records.append(record)
+
     dir_name = os.path.dirname(path)
     tmp_path = None
     try:
@@ -221,18 +223,23 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
     if start_time is None or end_time is None:
         log("Save skipped: missing timestamps.")
         return False
+
     bytes_sent = end_data.bytes_sent - start_data.bytes_sent
     bytes_recv = end_data.bytes_recv - start_data.bytes_recv
+
     if bytes_sent < 0 or bytes_recv < 0:
         log("Counter rollover detected, adjusting.")
         bytes_sent = max(0, bytes_sent)
         bytes_recv = max(0, bytes_recv)
+
     total_bytes = bytes_sent + bytes_recv
     mb_used = total_bytes / (1024 * 1024)
     duration = (end_time - start_time).total_seconds() / 60
+
     if duration <= 0:
         log("Save skipped: zero duration.")
         return False
+
     record = {
         "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
         "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -242,7 +249,9 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
         "total_bytes": total_bytes,
         "usage_MB": round(mb_used, 6)
     }
+
     csv_row = pd.DataFrame([record])
+
     csv_ok = False
     for attempt in range(retries):
         try:
@@ -251,6 +260,7 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
             break
         except Exception as e:
             log(f"Save attempt {attempt + 1}/{retries} failed: {e}")
+
     if not csv_ok:
         pending = FILE_PATH + ".pending"
         try:
@@ -258,8 +268,10 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
             log(f"Session saved to pending file: {pending}")
         except Exception as e:
             log(f"Pending CSV write also failed: {e}")
+
     json_ok = atomic_json_append(JSON_PATH, record)
     db_ok = save_to_db(record)
+
     if csv_ok:
         log(f"Saved: {mb_used:.4f} MB in {duration:.2f} mins")
     if not csv_ok and not json_ok and not db_ok:
@@ -271,10 +283,12 @@ def save_session(start_data, end_data, start_time, end_time, retries=3):
         log("JSON failed — data preserved in CSV/DB.")
     if not db_ok:
         log("DB failed — data preserved in CSV/JSON.")
+
     try:
         check_alerts()
     except Exception:
         pass
+
     return True
 
 _state = {}
@@ -319,25 +333,31 @@ def track_usage():
     initialize_json()
     init_db()
     merge_pending_csv()
+
     log("Tracker started (30-minute auto-save)")
+
     try:
         anomalies = detect_anomalies()
         if not anomalies.empty:
             log(f"Anomalies detected: {len(anomalies)} sessions flagged.")
     except Exception:
         pass
+
     atexit.register(do_shutdown_save)
     atexit.register(release_lock)
     signal.signal(signal.SIGTERM, shutdown_handler)
     signal.signal(signal.SIGINT, shutdown_handler)
+
     reset_state()
     last_save_time = None
     consecutive_failures = 0
+
     while True:
         try:
             current_interface = get_active_interface()
             now = datetime.now()
             consecutive_failures = 0
+
             if current_interface and not _state["connected"]:
                 data = get_interface_counters(current_interface)
                 if data:
@@ -350,10 +370,12 @@ def track_usage():
                     last_save_time = now
                 else:
                     log("Connected but counter read failed, retrying...")
+
             elif current_interface and _state["connected"]:
                 data = get_interface_counters(_state["interface"])
                 if data:
                     _state["last_data"] = data
+
                 if current_interface != _state["interface"]:
                     log(f"Interface changed: {_state['interface']} → {current_interface}")
                     end_data = data if data else _state.get("last_data")
@@ -365,6 +387,7 @@ def track_usage():
                     _state["last_data"] = new_data
                     _state["start_time"] = now
                     last_save_time = now
+
                 elif last_save_time and (now - last_save_time).total_seconds() >= AUTO_SAVE_INTERVAL:
                     if data:
                         log("Auto-saving (30 min)")
@@ -374,6 +397,7 @@ def track_usage():
                         last_save_time = now
                     else:
                         log("Auto-save skipped: counter read failed.")
+
             elif not current_interface and _state["connected"]:
                 log("Disconnected → saving session")
                 end_data = get_interface_counters(_state["interface"]) or _state.get("last_data")
@@ -383,6 +407,7 @@ def track_usage():
                     log("Disconnect save skipped: no counter data available.")
                 reset_state()
                 last_save_time = None
+
         except Exception as e:
             consecutive_failures += 1
             log(f"Unexpected error ({consecutive_failures}): {e}")
@@ -391,6 +416,7 @@ def track_usage():
                 reset_state()
                 last_save_time = None
                 consecutive_failures = 0
+
         time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
