@@ -138,14 +138,6 @@ That `(venv)` prefix means the virtual environment is active. **You must see thi
 
 With the virtual environment active (you see `(venv)` in your prompt), install all required packages.
 
-**Recommended:**
-
-```bash
-pip install -e .
-```
-
-**Alternative (if the above fails):**
-
 ```bash
 pip install -r requirements.txt
 ```
