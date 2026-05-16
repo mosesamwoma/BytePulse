@@ -18,3 +18,5 @@ actual_tasks.ps1
 .idea/
 Thumbs.db
 .DS_Store
+venv/
+BytePulse.egg-info/
