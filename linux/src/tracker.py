@@ -15,14 +15,25 @@ import threading
 import fcntl
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Add BytePulse root to path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
+# Now import from shared (database.py handles its own DB_PATH correctly)
 from shared.database.database import init_db, save_to_db
 from shared.core.anomaly import detect_anomalies
-from src.alerts import check_alerts
 
-# Fix: Point to BytePulse root, not linux folder
-BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
+# Import alerts from linux/src
+import importlib.util
+alerts_path = PROJECT_ROOT / "linux" / "src" / "alerts.py"
+spec = importlib.util.spec_from_file_location("alerts_module", alerts_path)
+alerts_module = importlib.util.module_from_spec(spec)
+sys.modules["alerts_module"] = alerts_module
+spec.loader.exec_module(alerts_module)
+check_alerts = alerts_module.check_alerts
+
+# Data directory (BytePulse/data)
+BASE_DIR = PROJECT_ROOT
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FILE_PATH = os.path.join(DATA_DIR, "usage_log.csv")
 JSON_PATH = os.path.join(DATA_DIR, "usage_log.json")
