@@ -5,7 +5,10 @@ import signal
 import atexit
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Fix: Correct path insertion
+LINUX_DIR = Path(__file__).parent
+PROJECT_DIR = LINUX_DIR.parent
+sys.path.insert(0, str(PROJECT_DIR))
 
 from src.tracker import track_usage
 
@@ -87,8 +90,8 @@ class Daemon:
             print("Daemon not running.")
 
 if __name__ == "__main__":
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    pidfile = os.path.join(BASE_DIR, "bytepulse.pid")
+    LINUX_DIR = Path(__file__).parent
+    pidfile = os.path.join(LINUX_DIR, "bytepulse.pid")
 
     daemon = Daemon(pidfile)
 

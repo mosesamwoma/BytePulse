@@ -6,9 +6,10 @@ from datetime import date, datetime
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Fix: Point to BytePulse root/data
+BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
 
 CAP_MB = 10240
