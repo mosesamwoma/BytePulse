@@ -4,6 +4,7 @@ import os
 import sys
 import psutil
 from PIL import Image, ImageDraw
+from pathlib import Path
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOCK_PATH = os.path.join(BASE_DIR, "data", "tracker.lock")
@@ -86,9 +87,17 @@ def get_status():
 
 
 def open_dashboard(icon, item):
-    subprocess.Popen(
-        ["streamlit", "run", os.path.join(BASE_DIR, "app.py")]
-    )
+    app_path = os.path.join(BASE_DIR, "app.py")
+    
+    if sys.platform == "win32":
+        subprocess.Popen(
+            ["streamlit", "run", app_path],
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+    else:
+        subprocess.Popen(
+            ["streamlit", "run", app_path]
+        )
 
 
 def stop_tracker(icon, item):
