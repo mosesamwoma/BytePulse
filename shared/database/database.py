@@ -1,8 +1,12 @@
 import sqlite3
 import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Fix: Point to BytePulse root/data, not shared folder
+BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
+
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)

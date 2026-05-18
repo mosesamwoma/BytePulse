@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Fix: Point to BytePulse root/data
+# Point to BytePulse root/data
 BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
 

@@ -2,14 +2,30 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys
+import os
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Fix: Add BytePulse root to path (app.py is in linux/)
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
+# Now safe to import from shared
 from shared.core.analyzer import load_data, summarize
 from shared.core.anomaly import detect_anomalies
-from src.alerts import get_daily_usage_sqlite, get_monthly_usage_sqlite, CAP_MB, MONTHLY_CAP_MB
 from shared.core.forecaster import forecast
+
+# Import alerts functions directly
+import importlib.util
+alerts_path = PROJECT_ROOT / "linux" / "src" / "alerts.py"
+spec = importlib.util.spec_from_file_location("alerts_module", alerts_path)
+alerts_module = importlib.util.module_from_spec(spec)
+sys.modules["alerts_module"] = alerts_module
+spec.loader.exec_module(alerts_module)
+get_daily_usage_sqlite = alerts_module.get_daily_usage_sqlite
+get_monthly_usage_sqlite = alerts_module.get_monthly_usage_sqlite
+CAP_MB = alerts_module.CAP_MB
+MONTHLY_CAP_MB = alerts_module.MONTHLY_CAP_MB
+
 from datetime import date, datetime
 
 st.set_page_config(page_title="BytePulse", layout="wide")
@@ -98,7 +114,6 @@ if view == "Daily":
 
     st.subheader("Data Usage Over Time (MB)")
     st.line_chart(data.set_index(x)["total_MB"])
-
     st.subheader("Sessions Over Time")
     st.bar_chart(data.set_index(x)["sessions"])
     st.markdown("---")

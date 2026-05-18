@@ -6,12 +6,15 @@ import psutil
 from PIL import Image, ImageDraw
 from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Point to BytePulse root/data (not linux/data)
+BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
 LOCK_PATH = os.path.join(BASE_DIR, "data", "tracker.lock")
 TRAY_LOCK = os.path.join(BASE_DIR, "data", "tray.lock")
 
 
 def acquire_tray_lock():
+    os.makedirs(os.path.dirname(TRAY_LOCK), exist_ok=True)
+    
     if os.path.exists(TRAY_LOCK):
         try:
             with open(TRAY_LOCK, "r") as f:
@@ -87,17 +90,13 @@ def get_status():
 
 
 def open_dashboard(icon, item):
-    app_path = os.path.join(BASE_DIR, "app.py")
-    
-    if sys.platform == "win32":
-        subprocess.Popen(
-            ["streamlit", "run", app_path],
-            creationflags=subprocess.CREATE_NO_WINDOW
-        )
-    else:
-        subprocess.Popen(
-            ["streamlit", "run", app_path]
-        )
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(BASE_DIR)
+    subprocess.Popen(
+        ["streamlit", "run", os.path.join(BASE_DIR, "linux", "app.py")],
+        env=env,
+        cwd=str(BASE_DIR)
+    )
 
 
 def stop_tracker(icon, item):

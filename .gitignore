@@ -20,3 +20,4 @@ Thumbs.db
 .DS_Store
 venv/
 BytePulse.egg-info/
+database.py.save
