@@ -5,13 +5,14 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=__USERNAME__
-WorkingDirectory=__PROJECT_DIR__
-ExecStart=__PROJECT_DIR__/venv/bin/python3 __PROJECT_DIR__/src/tracker.py
+User=moses-amwoma
+WorkingDirectory=/home/moses-amwoma/Documents/projects/BytePulse
+ExecStart=/home/moses-amwoma/Documents/projects/BytePulse/linux/venv/bin/python3 /home/moses-amwoma/Documents/projects/BytePulse/linux/src/tracker.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+Environment="PYTHONPATH=/home/moses-amwoma/Documents/projects/BytePulse"
 
 [Install]
 WantedBy=multi-user.target
