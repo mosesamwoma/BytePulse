@@ -15,13 +15,13 @@ import threading
 import msvcrt
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from shared.database.database import init_db, save_to_db
 from shared.core.anomaly import detect_anomalies
 from src.alerts import check_alerts
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 FILE_PATH = os.path.join(DATA_DIR, "usage_log.csv")
 JSON_PATH = os.path.join(DATA_DIR, "usage_log.json")

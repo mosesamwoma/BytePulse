@@ -3,9 +3,10 @@ import subprocess
 import os
 import sys
 import psutil
+import time
 from PIL import Image, ImageDraw
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOCK_PATH = os.path.join(BASE_DIR, "data", "tracker.lock")
 TRAY_LOCK = os.path.join(BASE_DIR, "data", "tray.lock")
 
@@ -87,10 +88,39 @@ def get_status():
 
 
 def open_dashboard(icon, item):
-    subprocess.Popen(
-        ["streamlit", "run", os.path.join(BASE_DIR, "app.py")],
-        creationflags=subprocess.CREATE_NO_WINDOW
-    )
+    try:
+        app_path = os.path.join(BASE_DIR, "windows", "app.py")
+        log_path = os.path.join(BASE_DIR, "logs", "dashboard.log")
+        
+        # Ensure logs directory exists
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        
+        # Use venv Python explicitly
+        venv_python = os.path.join(BASE_DIR, "venv", "Scripts", "python.exe")
+        
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(BASE_DIR)
+        
+        with open(log_path, "w") as log_file:
+            subprocess.Popen(
+                [venv_python, "-m", "streamlit", "run", app_path,
+                 "--server.port=8501",
+                 "--server.address=localhost", 
+                 "--logger.level=error", 
+                 "--client.showErrorDetails=false"],
+                cwd=str(BASE_DIR),
+                env=env,
+                stdout=log_file,
+                stderr=log_file,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+        
+        # Wait for server to be ready
+        time.sleep(4)
+        import webbrowser
+        webbrowser.open("http://localhost:8501")
+    except Exception as e:
+        print(f"[BytePulse] Error opening dashboard: {e}")
 
 
 def stop_tracker(icon, item):

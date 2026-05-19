@@ -5,7 +5,7 @@ import time
 from datetime import date, datetime
 from win10toast import ToastNotifier
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, "data", "bytepulse.db")
 
 CAP_MB = 10240          # 10GB daily cap in MB
