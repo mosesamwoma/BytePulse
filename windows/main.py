@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 def start_all():
-    project_root = Path(__file__).parent
+    project_root = Path(__file__).parent.parent
     
     data_dir = project_root / "data"
     logs_dir = project_root / "logs"
@@ -31,7 +31,7 @@ def start_all():
     try:
         print("[1/2] Starting system tray icon...")
         subprocess.Popen(
-            [str(venv_python), str(project_root / "src" / "tray.py")],
+            [str(venv_python), str(project_root / "windows" / "src" / "tray.py")],
             cwd=project_root
         )
         time.sleep(1)
@@ -39,7 +39,7 @@ def start_all():
         print("[2/2] Starting background tracker (10s delay)...")
         time.sleep(10)
         subprocess.Popen(
-            [str(venv_python), str(project_root / "src" / "tracker.py")],
+            [str(venv_python), str(project_root / "windows" / "src" / "tracker.py")],
             cwd=project_root
         )
         time.sleep(1)

@@ -68,6 +68,11 @@ today = date.today()
 today_df = df[df["start_time"].dt.date == today]
 today_usage = round(today_df["usage_MB"].sum(), 2)
 
+# Check if data is empty
+if data.empty:
+    st.warning("No data available yet. Tracker is collecting data...")
+    st.stop()
+
 st.subheader("Totals")
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Total Data (MB)", round(data["total_MB"].sum(), 2))

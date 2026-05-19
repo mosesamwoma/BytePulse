@@ -2,8 +2,9 @@
 
 set -e
 
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_DIR="$PROJECT_DIR/venv"
+LINUX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$LINUX_DIR")"
+VENV_DIR="$LINUX_DIR/venv"
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "[*] Creating virtual environment..."
@@ -13,7 +14,7 @@ fi
 source "$VENV_DIR/bin/activate"
 
 echo "[*] Installing dependencies..."
-pip install -q -r "$PROJECT_DIR/requirements.txt"
+pip install -q -r "$LINUX_DIR/requirements.txt"
 
 echo "[*] Starting BytePulse..."
-python3 "$PROJECT_DIR/main.py"
+python3 "$LINUX_DIR/main.py"

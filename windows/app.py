@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from shared.core.analyzer import load_data, summarize
 from shared.core.anomaly import detect_anomalies

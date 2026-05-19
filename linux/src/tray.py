@@ -95,21 +95,33 @@ def get_status():
 
 def open_dashboard(icon, item):
     try:
+        app_path = os.path.join(BASE_DIR, "linux", "app.py")
+        log_path = os.path.join(BASE_DIR, "logs", "dashboard.log")
+        
+        # Ensure logs directory exists
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        
+        # Use venv Python explicitly
+        venv_python = os.path.join(BASE_DIR, "linux", "venv", "bin", "python3")
+        
+        # Set up environment with PYTHONPATH
         env = os.environ.copy()
         env["PYTHONPATH"] = str(BASE_DIR)
         
-        app_path = os.path.join(BASE_DIR, "linux", "app.py")
-        
-        subprocess.Popen(
-            ["streamlit", "run", app_path],
-            env=env,
-            cwd=str(BASE_DIR),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        # Run streamlit with error logging
+        with open(log_path, "w") as log_file:
+            subprocess.Popen(
+                [venv_python, "-m", "streamlit", "run", app_path],
+                cwd=str(BASE_DIR),
+                env=env,
+                stdout=log_file,
+                stderr=log_file
+            )
         print(f"[BytePulse] Opening dashboard: {app_path}")
     except Exception as e:
         print(f"[BytePulse] Error opening dashboard: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def stop_tracker(icon, item):

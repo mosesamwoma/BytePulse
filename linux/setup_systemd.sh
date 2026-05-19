@@ -6,6 +6,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$PROJECT_DIR")"
 USERNAME="${SUDO_USER:-$(whoami)}"
 
 echo "[*] Setting up systemd service..."
@@ -26,7 +27,7 @@ Wants=network-online.target
 Type=simple
 User=$USERNAME
 WorkingDirectory=$PROJECT_DIR
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/src/tracker.py
+ExecStart=$PROJECT_DIR/linux/venv/bin/python3 $PROJECT_DIR/linux/src/tracker.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

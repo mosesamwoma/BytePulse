@@ -78,7 +78,7 @@ def init_database():
     
     try:
         subprocess.run([venv_python, "-c", 
-                       "import sys; sys.path.insert(0, '..'); from shared.database.database import init_db; init_db()"],
+                       "import sys; sys.path.insert(0, '../..'); from shared.database.database import init_db; init_db()"],
                       capture_output=True, check=True, cwd=Path.cwd())
         print("[OK] Database initialized")
         return True
