@@ -111,15 +111,19 @@ def open_dashboard(icon, item):
         # Run streamlit with error logging
         with open(log_path, "w") as log_file:
             subprocess.Popen(
-                [venv_python, "-m", "streamlit", "run", app_path, "--logger.level=error", "--client.showErrorDetails=false"],
+                [venv_python, "-m", "streamlit", "run", app_path, 
+                 "--server.port=8501", 
+                 "--server.address=localhost",
+                 "--logger.level=error", 
+                 "--client.showErrorDetails=false"],
                 cwd=str(BASE_DIR),
                 env=env,
                 stdout=log_file,
                 stderr=log_file
             )
         
-        # Open browser after a short delay
-        time.sleep(2)
+        # Wait for server to be ready
+        time.sleep(4)
         import webbrowser
         webbrowser.open("http://localhost:8501")
         print(f"[BytePulse] Opening dashboard: {app_path}")
