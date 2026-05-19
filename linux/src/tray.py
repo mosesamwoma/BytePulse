@@ -5,6 +5,7 @@ import sys
 import psutil
 from PIL import Image, ImageDraw
 from pathlib import Path
+import time
 
 # Point to BytePulse root/data (not linux/data)
 BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
@@ -65,9 +66,12 @@ def create_icon():
 
     for path in [primary, backup]:
         if os.path.exists(path):
-            img = Image.open(path).convert("RGBA")
-            img = img.resize((64, 64), Image.LANCZOS)
-            return img
+            try:
+                img = Image.open(path).convert("RGBA")
+                img = img.resize((64, 64), Image.LANCZOS)
+                return img
+            except Exception:
+                pass
 
     size = 64
     image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -90,13 +94,22 @@ def get_status():
 
 
 def open_dashboard(icon, item):
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(BASE_DIR)
-    subprocess.Popen(
-        ["streamlit", "run", os.path.join(BASE_DIR, "linux", "app.py")],
-        env=env,
-        cwd=str(BASE_DIR)
-    )
+    try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(BASE_DIR)
+        
+        app_path = os.path.join(BASE_DIR, "linux", "app.py")
+        
+        subprocess.Popen(
+            ["streamlit", "run", app_path],
+            env=env,
+            cwd=str(BASE_DIR),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        print(f"[BytePulse] Opening dashboard: {app_path}")
+    except Exception as e:
+        print(f"[BytePulse] Error opening dashboard: {e}")
 
 
 def stop_tracker(icon, item):
@@ -107,14 +120,17 @@ def stop_tracker(icon, item):
             proc = psutil.Process(pid)
             proc.terminate()
             proc.wait(timeout=5)
-    except (psutil.NoSuchProcess, psutil.TimeoutExpired, Exception):
-        pass
+            print("[BytePulse] Tracker stopped")
+    except (psutil.NoSuchProcess, psutil.TimeoutExpired, Exception) as e:
+        print(f"[BytePulse] Error stopping tracker: {e}")
 
 
 def quit_all(icon, item):
+    print("[BytePulse] Quitting tray")
     stop_tracker(icon, item)
     release_tray_lock()
     icon.stop()
+    sys.exit(0)
 
 
 def run_tray():
@@ -132,10 +148,11 @@ def run_tray():
     icon = pystray.Icon(
         name="BytePulse",
         icon=create_icon(),
-        title="BytePulse",
+        title="BytePulse WiFi Tracker",
         menu=menu
     )
 
+    print("[BytePulse] Tray icon started")
     icon.run()
     release_tray_lock()
 
