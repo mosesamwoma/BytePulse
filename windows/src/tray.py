@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import psutil
+import time
 from PIL import Image, ImageDraw
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -102,13 +103,18 @@ def open_dashboard(icon, item):
         
         with open(log_path, "w") as log_file:
             subprocess.Popen(
-                [venv_python, "-m", "streamlit", "run", app_path],
+                [venv_python, "-m", "streamlit", "run", app_path, "--logger.level=error", "--client.showErrorDetails=false"],
                 cwd=str(BASE_DIR),
                 env=env,
                 stdout=log_file,
                 stderr=log_file,
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
+        
+        # Open browser after a short delay
+        time.sleep(2)
+        import webbrowser
+        webbrowser.open("http://localhost:8501")
     except Exception as e:
         print(f"[BytePulse] Error opening dashboard: {e}")
 

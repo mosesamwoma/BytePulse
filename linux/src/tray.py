@@ -111,12 +111,17 @@ def open_dashboard(icon, item):
         # Run streamlit with error logging
         with open(log_path, "w") as log_file:
             subprocess.Popen(
-                [venv_python, "-m", "streamlit", "run", app_path],
+                [venv_python, "-m", "streamlit", "run", app_path, "--logger.level=error", "--client.showErrorDetails=false"],
                 cwd=str(BASE_DIR),
                 env=env,
                 stdout=log_file,
                 stderr=log_file
             )
+        
+        # Open browser after a short delay
+        time.sleep(2)
+        import webbrowser
+        webbrowser.open("http://localhost:8501")
         print(f"[BytePulse] Opening dashboard: {app_path}")
     except Exception as e:
         print(f"[BytePulse] Error opening dashboard: {e}")
