@@ -158,7 +158,9 @@ def get_active_interface():
     try:
         stats = psutil.net_if_stats()
         for name, stat in stats.items():
-            if stat.isup and ("wlan" in name.lower() or "wifi" in name.lower() or "wpa" in name.lower()):
+            name_lower = name.lower()
+            # Match WiFi interfaces: wlan*, wifi*, wpa*, wl* (wlp, wls, wlx for modern adapters)
+            if stat.isup and (name_lower.startswith("wlan") or name_lower.startswith("wifi") or name_lower.startswith("wpa") or name_lower.startswith("wl")):
                 if has_ip_address(name):
                     return name
         return None
