@@ -17,7 +17,7 @@ chown -R "$USERNAME:$USERNAME" "$PROJECT_DIR"
 
 SERVICE_FILE="/etc/systemd/system/bytepulse.service"
 
-cat > "$SERVICE_FILE" << EOF
+cat > "$SERVICE_FILE" << 'EOF'
 [Unit]
 Description=BytePulse WiFi Data Tracker
 After=network-online.target
@@ -25,9 +25,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=$USERNAME
-WorkingDirectory=$PROJECT_DIR
-ExecStart=$PROJECT_DIR/linux/venv/bin/python3 $PROJECT_DIR/linux/src/tracker.py
+User=mosesamwoma
+WorkingDirectory=/home/mosesamwoma/projects/BytePulse
+Environment="PYTHONPATH=/home/mosesamwoma/projects/BytePulse"
+ExecStart=/bin/bash /home/mosesamwoma/projects/BytePulse/linux/run_tracker.sh
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

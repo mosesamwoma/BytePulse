@@ -7,7 +7,8 @@ Wants=network-online.target
 Type=simple
 User=mosesamwoma
 WorkingDirectory=/home/mosesamwoma/projects/BytePulse
-ExecStart=/home/mosesamwoma/projects/BytePulse/linux/venv/bin/python3 /home/mosesamwoma/projects/BytePulse/linux/src/tracker.py
+Environment="PYTHONPATH=/home/mosesamwoma/projects/BytePulse"
+ExecStart=/bin/bash /home/mosesamwoma/projects/BytePulse/linux/run_tracker.sh
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
