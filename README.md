@@ -46,6 +46,19 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ---
 
+## Gallery
+
+### Dashboard Overview
+![Dashboard overview](/assets/1.png)
+
+### Peak Hours & Detailed Data
+![Peak hours and detailed data](/assets/3.png)
+
+### 7-Day Usage Forecast
+![7-Day Usage Forecast](/assets/6.png)
+
+---
+
 ## Getting Started
 
 ```bash
