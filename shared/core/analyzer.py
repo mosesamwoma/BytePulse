@@ -13,9 +13,14 @@ def load_data():
             "bytes_sent", "bytes_received", "total_bytes", "usage_MB"
         ])
     
-    df = pd.read_csv(INPUT)
-    df["start_time"] = pd.to_datetime(df["start_time"])
-    df["end_time"] = pd.to_datetime(df["end_time"])
+    df = pd.read_csv(INPUT, parse_dates=["start_time", "end_time"])
+    
+    # Fallback: ensure datetime conversion even if parse_dates fails
+    if not pd.api.types.is_datetime64_any_dtype(df["start_time"]):
+        df["start_time"] = pd.to_datetime(df["start_time"], errors="coerce")
+    if not pd.api.types.is_datetime64_any_dtype(df["end_time"]):
+        df["end_time"] = pd.to_datetime(df["end_time"], errors="coerce")
+    
     return df
 
 def summarize(df, by):

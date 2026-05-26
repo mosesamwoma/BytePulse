@@ -49,6 +49,19 @@ def load_forecast():
     return forecast(days=7)
 
 df = load_cached()
+
+# Ensure datetime types are set
+if not df.empty:
+    if not pd.api.types.is_datetime64_any_dtype(df["start_time"]):
+        df["start_time"] = pd.to_datetime(df["start_time"], errors="coerce")
+    if not pd.api.types.is_datetime64_any_dtype(df["end_time"]):
+        df["end_time"] = pd.to_datetime(df["end_time"], errors="coerce")
+
+# Check if data is empty BEFORE trying to use dt accessor
+if df.empty or df["start_time"].isna().all():
+    st.warning("No data available yet. Tracker is collecting data...")
+    st.stop()
+
 df["hour"] = df["start_time"].dt.hour
 df["day_name"] = df["start_time"].dt.day_name()
 
