@@ -8,7 +8,7 @@ Track every WiFi session, detect heavy usage, and visualize patterns with zero c
 
 ## Overview
 
-BytePulse runs silently in the background via systemd. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV, JSON, and SQLite database at regular intervals.
+BytePulse runs silently in the background. Every time you connect to WiFi, it starts tracking your data usage and saves sessions to a local CSV, JSON, and SQLite database at regular intervals.
 
 No cloud. No subscriptions. No tracking. Just clean local data that belongs to you.
 
@@ -25,7 +25,7 @@ No cloud. No subscriptions. No tracking. Just clean local data that belongs to y
 
 ## Features
 
-- **Silent background tracking** — runs via systemd at startup, no terminal window
+- **Silent background tracking** — runs via systemd at boot, no terminal window
 - **Triple-format logging** — every session saved to CSV, JSON, and SQLite simultaneously
 - **Atomic writes** — temp-file-swap pattern prevents data corruption on crash
 - **Fault tolerance** — if CSV write fails, data falls back to a `.pending` file and merges on next run
@@ -75,17 +75,25 @@ You should see:
 Python 3.11.x
 ```
 
-If you see `3.10`, `3.12`, `3.13`, or anything other than `3.11`, you need to install Python 3.11 first. On Ubuntu/Debian:
+If you see `3.10`, `3.12`, `3.13`, or anything other than `3.11`, you need to install Python 3.11 first.
+
+**On Ubuntu/Debian:**
 
 ```bash
 sudo apt update
 sudo apt install python3.11 python3.11-venv
 ```
 
-On Fedora/RHEL:
+**On Fedora/RHEL:**
 
 ```bash
 sudo dnf install python3.11
+```
+
+**On Arch Linux:**
+
+```bash
+sudo pacman -S python
 ```
 
 After installing, close the terminal and reopen it, then run `python3.11 --version` again to confirm.
@@ -100,14 +108,15 @@ In a terminal, run:
 
 ```bash
 git clone https://github.com/mosesamwoma/BytePulse.git
-cd BytePulse/linux
+cd BytePulse
 ```
 
-After running `cd BytePulse/linux`, your terminal is now inside the BytePulse Linux folder. All future commands assume you are in this folder.
+After running `cd BytePulse`, your terminal is now inside the BytePulse folder. All future commands assume you are in this folder.
 
 > 💡 **Don't have Git?** Install it:
 > - Ubuntu/Debian: `sudo apt install git`
 > - Fedora/RHEL: `sudo dnf install git`
+> - Arch: `sudo pacman -S git`
 
 ---
 
@@ -118,6 +127,7 @@ A virtual environment is an isolated Python workspace for BytePulse. It keeps By
 Run:
 
 ```bash
+cd linux
 python3.11 -m venv venv
 source venv/bin/activate
 ```
@@ -130,7 +140,7 @@ After the second command, your terminal prompt will change to start with `(venv)
 
 That `(venv)` prefix means the virtual environment is active. **You must see this before running any further commands.**
 
-> ⚠️ **Every time you open a new terminal window**, you need to navigate to the BytePulse folder and run `source venv/bin/activate` again before working on BytePulse. The `(venv)` prefix does not persist between sessions.
+> ⚠️ **Every time you open a new terminal window**, you need to navigate to the BytePulse/linux folder and run `source venv/bin/activate` again before working on BytePulse. The `(venv)` prefix does not persist between sessions.
 
 ---
 
@@ -143,8 +153,6 @@ pip install -r requirements.txt
 ```
 
 This will download and install several packages — it may take a minute or two. You'll see a lot of output scrolling past; that's normal. Wait until you get your prompt back.
-
-> 💡 The `-e` flag in the first option installs BytePulse in "editable" mode, meaning any code changes you make take effect immediately without reinstalling.
 
 ---
 
