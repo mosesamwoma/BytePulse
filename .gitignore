@@ -1,4 +1,5 @@
 start_tracker.bat
+run-tracker.sh
 __pycache__/
 *.pyc
 *.pyo
