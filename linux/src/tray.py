@@ -6,9 +6,9 @@ import psutil
 from PIL import Image, ImageDraw
 from pathlib import Path
 import time
+import webbrowser
 
-# Point to BytePulse root/data (not linux/data)
-BASE_DIR = Path(__file__).parent.parent.parent  # BytePulse/
+BASE_DIR = Path(__file__).parent.parent.parent
 LOCK_PATH = os.path.join(BASE_DIR, "data", "tracker.lock")
 TRAY_LOCK = os.path.join(BASE_DIR, "data", "tray.lock")
 
@@ -94,46 +94,45 @@ def get_status():
 
 
 def open_dashboard(icon, item):
+    print("[BytePulse] Opening dashboard...")
     try:
         app_path = os.path.join(BASE_DIR, "linux", "app.py")
-        log_path = os.path.join(BASE_DIR, "logs", "dashboard.log")
-        
-        # Ensure logs directory exists
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        
-        # Use venv Python explicitly
         venv_python = os.path.join(BASE_DIR, "linux", "venv", "bin", "python3")
         
-        # Set up environment with PYTHONPATH
+        # Set up environment
         env = os.environ.copy()
         env["PYTHONPATH"] = str(BASE_DIR)
         
-        # Run streamlit with error logging
-        with open(log_path, "w") as log_file:
-            subprocess.Popen(
-                [venv_python, "-m", "streamlit", "run", app_path, 
-                 "--server.port=8501", 
-                 "--server.address=localhost",
-                 "--logger.level=error", 
-                 "--client.showErrorDetails=false"],
-                cwd=str(BASE_DIR),
-                env=env,
-                stdout=log_file,
-                stderr=log_file
-            )
+        # Start streamlit
+        print(f"[BytePulse] Starting: {venv_python} -m streamlit run {app_path}")
         
-        # Wait for server to be ready
-        time.sleep(4)
-        import webbrowser
+        process = subprocess.Popen(
+            [venv_python, "-m", "streamlit", "run", app_path,
+             "--server.port=8501",
+             "--server.address=localhost"],
+            cwd=str(BASE_DIR),
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        
+        print(f"[BytePulse] Streamlit started (PID {process.pid})")
+        
+        # Wait for server to start
+        time.sleep(3)
+        
+        # Open browser
+        print("[BytePulse] Opening browser...")
         webbrowser.open("http://localhost:8501")
-        print(f"[BytePulse] Opening dashboard: {app_path}")
+        
     except Exception as e:
-        print(f"[BytePulse] Error opening dashboard: {e}")
+        print(f"[BytePulse] Error: {e}")
         import traceback
         traceback.print_exc()
 
 
 def stop_tracker(icon, item):
+    print("[BytePulse] Stopping tracker...")
     try:
         if os.path.exists(LOCK_PATH):
             with open(LOCK_PATH, "r") as f:
@@ -143,12 +142,11 @@ def stop_tracker(icon, item):
             proc.wait(timeout=5)
             print("[BytePulse] Tracker stopped")
     except (psutil.NoSuchProcess, psutil.TimeoutExpired, Exception) as e:
-        print(f"[BytePulse] Error stopping tracker: {e}")
+        print(f"[BytePulse] Error: {e}")
 
 
 def quit_all(icon, item):
     print("[BytePulse] Quitting tray")
-    stop_tracker(icon, item)
     release_tray_lock()
     icon.stop()
     sys.exit(0)
