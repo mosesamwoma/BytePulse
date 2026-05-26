@@ -31,7 +31,7 @@ def summarize(df, by):
         grouped = df.groupby(df["start_time"].dt.date).agg({
             "usage_MB": "sum",
             "duration_minutes": "sum",
-            "start_time": "count"
+            "bytes_sent": "count"  # Count sessions using a different column
         }).reset_index()
         grouped.columns = ["date", "total_MB", "total_duration", "sessions"]
         return grouped
@@ -40,7 +40,7 @@ def summarize(df, by):
         grouped = df.groupby(df["start_time"].dt.isocalendar().week).agg({
             "usage_MB": "sum",
             "duration_minutes": "sum",
-            "start_time": "count"
+            "bytes_sent": "count"  # Count sessions using a different column
         }).reset_index()
         grouped.columns = ["week", "total_MB", "total_duration", "sessions"]
         return grouped
@@ -49,7 +49,7 @@ def summarize(df, by):
         grouped = df.groupby(df["start_time"].dt.to_period("M")).agg({
             "usage_MB": "sum",
             "duration_minutes": "sum",
-            "start_time": "count"
+            "bytes_sent": "count"  # Count sessions using a different column
         }).reset_index()
         grouped.columns = ["month", "total_MB", "total_duration", "sessions"]
         grouped["month"] = grouped["month"].astype(str)
