@@ -7,6 +7,7 @@ from pathlib import Path
 def start_all():
     linux_dir = Path(__file__).parent
     project_root = linux_dir.parent
+    venv_python = linux_dir / "venv" / "bin" / "python3"
 
     data_dir = project_root / "data"
     logs_dir = project_root / "logs"
@@ -20,7 +21,7 @@ def start_all():
 
     print("Starting BytePulse...\n")
 
-    python_bin = "python3"
+    python_bin = str(venv_python) if venv_python.exists() else "python3"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(project_root)
 

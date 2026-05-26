@@ -1,16 +1,25 @@
-import pystray
 import subprocess
 import os
 import sys
 import psutil
-from PIL import Image, ImageDraw
 from pathlib import Path
 import time
-import webbrowser
+import socket
+from contextlib import closing
+import threading
+
+from PySide6.QtCore import QUrl, Qt
+from PySide6.QtGui import QAction, QBrush, QColor, QDesktopServices, QIcon, QPainter, QPixmap
+from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 BASE_DIR = Path(__file__).parent.parent.parent
 LOCK_PATH = os.path.join(BASE_DIR, "data", "tracker.lock")
 TRAY_LOCK = os.path.join(BASE_DIR, "data", "tray.lock")
+DASHBOARD_PORT = 8501
+DASHBOARD_URL = f"http://127.0.0.1:{DASHBOARD_PORT}"
+DASHBOARD_LOG = os.path.join(BASE_DIR, "logs", "dashboard.log")
+APP_PATH = os.path.join(BASE_DIR, "linux", "app.py")
+VENV_PYTHON = os.path.join(BASE_DIR, "linux", "venv", "bin", "python3")
 
 
 def acquire_tray_lock():
@@ -66,20 +75,78 @@ def create_icon():
 
     for path in [primary, backup]:
         if os.path.exists(path):
-            try:
-                img = Image.open(path).convert("RGBA")
-                img = img.resize((64, 64), Image.LANCZOS)
-                return img
-            except Exception:
-                pass
+            icon = QIcon(path)
+            if not icon.isNull():
+                return icon
 
-    size = 64
-    image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.ellipse([4, 4, size - 4, size - 4], fill=(0, 120, 215))
-    draw.rectangle([28, 16, 36, 36], fill="white")
-    draw.rectangle([28, 40, 36, 48], fill="white")
-    return image
+    pixmap = QPixmap(64, 64)
+    pixmap.fill(Qt.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.Antialiasing)
+    painter.setBrush(QBrush(QColor("#1e88e5")))
+    painter.setPen(Qt.NoPen)
+    painter.drawEllipse(4, 4, 56, 56)
+    painter.end()
+    return QIcon(pixmap)
+
+
+def dashboard_is_running():
+    try:
+        with closing(socket.create_connection(("127.0.0.1", DASHBOARD_PORT), timeout=0.5)):
+            return True
+    except OSError:
+        return False
+
+
+def wait_for_dashboard(timeout_seconds=15):
+    deadline = time.time() + timeout_seconds
+    while time.time() < deadline:
+        if dashboard_is_running():
+            return True
+        time.sleep(0.5)
+    return False
+
+
+def launch_dashboard_process():
+    if dashboard_is_running():
+        return True
+
+    os.makedirs(os.path.dirname(DASHBOARD_LOG), exist_ok=True)
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(BASE_DIR)
+
+    python_bin = VENV_PYTHON if os.path.exists(VENV_PYTHON) else sys.executable
+    with open(DASHBOARD_LOG, "a", encoding="utf-8") as log_file:
+        subprocess.Popen(
+            [
+                python_bin,
+                "-m",
+                "streamlit",
+                "run",
+                APP_PATH,
+                "--server.port",
+                str(DASHBOARD_PORT),
+                "--server.address",
+                "127.0.0.1",
+                "--server.headless",
+                "true",
+                "--browser.gatherUsageStats",
+                "false",
+                "--logger.level",
+                "error",
+            ],
+            cwd=str(BASE_DIR),
+            env=env,
+            stdout=log_file,
+            stderr=log_file,
+            start_new_session=True,
+        )
+
+    return wait_for_dashboard()
+
+
+def open_dashboard_browser():
+    return QDesktopServices.openUrl(QUrl(DASHBOARD_URL))
 
 
 def get_status():
@@ -94,41 +161,24 @@ def get_status():
 
 
 def open_dashboard(icon, item):
-    print("[BytePulse] Opening dashboard...")
-    try:
-        app_path = os.path.join(BASE_DIR, "linux", "app.py")
-        venv_python = os.path.join(BASE_DIR, "linux", "venv", "bin", "python3")
-        
-        # Set up environment
-        env = os.environ.copy()
-        env["PYTHONPATH"] = str(BASE_DIR)
-        
-        # Start streamlit
-        print(f"[BytePulse] Starting: {venv_python} -m streamlit run {app_path}")
-        
-        process = subprocess.Popen(
-            [venv_python, "-m", "streamlit", "run", app_path,
-             "--server.port=8501",
-             "--server.address=localhost"],
-            cwd=str(BASE_DIR),
-            env=env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
-        
-        print(f"[BytePulse] Streamlit started (PID {process.pid})")
-        
-        # Wait for server to start
-        time.sleep(3)
-        
-        # Open browser
-        print("[BytePulse] Opening browser...")
-        webbrowser.open("http://localhost:8501")
-        
-    except Exception as e:
-        print(f"[BytePulse] Error: {e}")
-        import traceback
-        traceback.print_exc()
+    def worker():
+        print("[BytePulse] Opening dashboard...")
+        try:
+            if not dashboard_is_running():
+                if launch_dashboard_process():
+                    print(f"[BytePulse] Dashboard ready at {DASHBOARD_URL}")
+                else:
+                    print(f"[BytePulse] Dashboard did not respond within timeout; check {DASHBOARD_LOG}")
+
+            print("[BytePulse] Opening browser...")
+            if not open_dashboard_browser():
+                print(f"[BytePulse] Unable to open browser automatically. Visit {DASHBOARD_URL}")
+        except Exception as e:
+            print(f"[BytePulse] Error: {e}")
+            import traceback
+            traceback.print_exc()
+
+    threading.Thread(target=worker, daemon=True).start()
 
 
 def stop_tracker(icon, item):
@@ -149,31 +199,52 @@ def quit_all(icon, item):
     print("[BytePulse] Quitting tray")
     release_tray_lock()
     icon.stop()
-    sys.exit(0)
+    QApplication.instance().quit()
 
 
 def run_tray():
     acquire_tray_lock()
 
-    menu = pystray.Menu(
-        pystray.MenuItem(lambda _: f"Status: {get_status()}", None, enabled=False),
-        pystray.Menu.SEPARATOR,
-        pystray.MenuItem("Open Dashboard", open_dashboard),
-        pystray.MenuItem("Stop Tracker", stop_tracker),
-        pystray.Menu.SEPARATOR,
-        pystray.MenuItem("Quit", quit_all),
-    )
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(False)
+    app.setApplicationName("BytePulse")
 
-    icon = pystray.Icon(
-        name="BytePulse",
-        icon=create_icon(),
-        title="BytePulse WiFi Tracker",
-        menu=menu
-    )
+    if not QSystemTrayIcon.isSystemTrayAvailable():
+        print("[BytePulse] System tray is not available in this session")
+        release_tray_lock()
+        sys.exit(1)
+
+    tray = QSystemTrayIcon(create_icon())
+    tray.setToolTip("BytePulse WiFi Tracker")
+
+    menu = QMenu()
+    status_action = QAction(f"Status: {get_status()}")
+    status_action.setEnabled(False)
+    menu.addAction(status_action)
+    menu.addSeparator()
+
+    open_action = QAction("Open Dashboard")
+    open_action.triggered.connect(lambda: open_dashboard(tray, None))
+    menu.addAction(open_action)
+
+    stop_action = QAction("Stop Tracker")
+    stop_action.triggered.connect(lambda: stop_tracker(tray, None))
+    menu.addAction(stop_action)
+
+    menu.addSeparator()
+
+    quit_action = QAction("Quit")
+    quit_action.triggered.connect(lambda: quit_all(tray, None))
+    menu.addAction(quit_action)
+
+    tray.setContextMenu(menu)
+    tray.activated.connect(lambda reason: open_dashboard(tray, None) if reason in (QSystemTrayIcon.ActivationReason.Trigger, QSystemTrayIcon.ActivationReason.DoubleClick) else None)
+    tray.show()
 
     print("[BytePulse] Tray icon started")
-    icon.run()
+    exit_code = app.exec()
     release_tray_lock()
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
