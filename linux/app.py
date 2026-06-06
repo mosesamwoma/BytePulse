@@ -29,25 +29,26 @@ MONTHLY_CAP_MB = alerts_module.MONTHLY_CAP_MB
 from datetime import date, datetime
 
 st.set_page_config(page_title="BytePulse", layout="wide")
-st.title("BytePulse Dashboard")
 
-view = st.sidebar.selectbox("View", ["Daily", "Weekly", "Monthly"])
-st.sidebar.markdown("---")
-
-st.caption(f"Last refreshed: {datetime.now().strftime('%H:%M:%S')}")
-
-if st.button("🔄 Refresh Now"):
-    st.cache_data.clear()
-    st.rerun()
+# Sidebar
+with st.sidebar:
+    st.title("BytePulse")
+    view = st.selectbox("View", ["Daily", "Weekly", "Monthly"])
+    st.divider()
+    st.caption(f"Last refreshed: {datetime.now().strftime('%H:%M:%S')}")
+    if st.button("🔄 Refresh", use_container_width=True):
+        st.cache_data.clear()
+        st.rerun()
 
 @st.cache_data
 def load_cached():
     return load_data()
 
 @st.cache_data
-def load_forecast():
+def load_forecast_cached():
     return forecast(days=7)
 
+# Load data
 df = load_cached()
 
 # Ensure datetime types are set
@@ -65,6 +66,55 @@ if df.empty or df["start_time"].isna().all():
 df["hour"] = df["start_time"].dt.hour
 df["day_name"] = df["start_time"].dt.day_name()
 
+# ============ MAIN: 7-Day Forecast (TOP PRIORITY) ============
+st.header("7-Day Usage Forecast")
+
+forecast_df, model = load_forecast_cached()
+if forecast_df is None:
+    st.info("📊 Not enough data to forecast. Please wait for more tracking data.")
+else:
+    # Create forecast visualization
+    forecast_df["day_label"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A %d %b")
+    
+    # Create the chart
+    fig, ax = plt.subplots(figsize=(12, 4))
+    
+    # Convert to numeric for plotting
+    y_pred = pd.to_numeric(forecast_df["predicted_MB"], errors='coerce')
+    y_lower = pd.to_numeric(forecast_df["lower_MB"], errors='coerce')
+    y_upper = pd.to_numeric(forecast_df["upper_MB"], errors='coerce')
+    x_range = range(len(forecast_df))
+    
+    # Plot confidence interval as filled area
+    ax.fill_between(x_range, y_lower, y_upper, alpha=0.3, color="#1f77b4", label="Confidence Range")
+    
+    # Plot main line
+    ax.plot(x_range, y_pred, marker="o", color="#1f77b4", linewidth=2, markersize=8, label="Predicted")
+    
+    # Styling
+    ax.set_xticks(x_range)
+    ax.set_xticklabels(forecast_df["day_label"], rotation=15, ha="right")
+    ax.set_xlabel("Day", fontsize=11)
+    ax.set_ylabel("Predicted MB", fontsize=11)
+    ax.grid(True, alpha=0.3)
+    ax.set_facecolor("#f8f9fa")
+    
+    plt.tight_layout()
+    st.pyplot(fig)
+    
+    # Display forecast table
+    display_df = forecast_df[["day_label", "predicted_MB", "lower_MB", "upper_MB"]].copy()
+    display_df.columns = ["Day", "Predicted (MB)", "Lower (MB)", "Upper (MB)"]
+    
+    # Format numbers
+    for col in ["Predicted (MB)", "Lower (MB)", "Upper (MB)"]:
+        display_df[col] = pd.to_numeric(display_df[col], errors='coerce').round(2)
+    
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+st.divider()
+
+# ============ Summary Metrics ============
 if view == "Daily":
     data = summarize(df, "date")
     x = "date"
@@ -77,46 +127,65 @@ else:
 
 data = data.reset_index(drop=True)
 
-today = date.today()
-today_df = df[df["start_time"].dt.date == today]
-today_usage = round(today_df["usage_MB"].sum(), 2)
-
-# Check if data is empty
 if data.empty:
     st.warning("No data available yet. Tracker is collecting data...")
     st.stop()
 
-st.subheader("Totals")
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Total Data (MB)", round(data["total_MB"].sum(), 2))
-c2.metric("Total Sessions", int(data["sessions"].sum()))
-c3.metric("Total Duration (min)", int(data["total_duration"].sum()))
-c4.metric("Peak Usage (MB)", round(data["total_MB"].max(), 2))
-c5.metric("Today's Usage (MB)", today_usage)
+today = date.today()
+today_df = df[df["start_time"].dt.date == today]
+today_usage = round(today_df["usage_MB"].sum(), 2)
 
-st.markdown("---")
+col1, col2, col3, col4, col5 = st.columns(5)
+col1.metric("Total Data (MB)", f"{data['total_MB'].sum():.2f}")
+col2.metric("Sessions", f"{int(data['sessions'].sum())}")
+col3.metric("Peak Day (MB)", f"{data['total_MB'].max():.2f}")
+col4.metric("Today (MB)", f"{today_usage}")
+col5.metric("Days Tracked", len(data))
 
+st.divider()
+
+# ============ Data Cap Info ============
 if view == "Daily":
-    st.subheader("Data Cap")
+    st.subheader("Daily Data Cap")
     cycle_usage = get_daily_usage_sqlite()
     usage_pct = min(cycle_usage / CAP_MB, 1.0)
-    st.metric("Daily Usage (MB)", f"{cycle_usage:.0f} / {CAP_MB}", delta=f"{usage_pct*100:.1f}% used")
+    col1, col2 = st.columns(2)
+    col1.metric("Used", f"{cycle_usage:.0f} MB")
+    col2.metric("Cap", f"{CAP_MB} MB")
     st.progress(usage_pct)
-    st.markdown("---")
 
-if view == "Monthly":
+elif view == "Monthly":
     st.subheader("Monthly Data Cap")
     monthly_usage = get_monthly_usage_sqlite()
     monthly_pct = min(monthly_usage / MONTHLY_CAP_MB, 1.0)
-    st.metric("Monthly Usage (MB)", f"{monthly_usage:.0f} / {MONTHLY_CAP_MB}", delta=f"{monthly_pct*100:.1f}% used")
+    col1, col2 = st.columns(2)
+    col1.metric("Used", f"{monthly_usage:.0f} MB")
+    col2.metric("Cap", f"{MONTHLY_CAP_MB} MB")
     st.progress(monthly_pct)
-    st.markdown("---")
 
+st.divider()
+
+# ============ Usage Charts ============
 if view == "Daily":
-    st.subheader("Hourly Usage Heatmap")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Usage Over Time")
+        st.line_chart(data.set_index(x)["total_MB"], use_container_width=True)
+    
+    with col2:
+        st.subheader("Sessions Over Time")
+        st.bar_chart(data.set_index(x)["sessions"], use_container_width=True)
+
+st.divider()
+
+# ============ Hourly Heatmap ============
+if view == "Daily":
+    st.subheader("Hourly Usage Pattern (MB)")
     day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     heatmap_data = df.groupby(["day_name", "hour"])["usage_MB"].sum().reset_index()
     heatmap_pivot = heatmap_data.pivot(index="day_name", columns="hour", values="usage_MB").reindex(day_order).fillna(0)
+    
     fig, ax = plt.subplots(figsize=(14, 4))
     im = ax.imshow(heatmap_pivot.values, aspect="auto", cmap="Blues")
     ax.set_xticks(range(24))
@@ -128,108 +197,38 @@ if view == "Daily":
     plt.colorbar(im, ax=ax, label="MB")
     plt.tight_layout()
     st.pyplot(fig)
-    st.markdown("---")
 
-    st.subheader("Data Usage Over Time (MB)")
-    st.line_chart(data.set_index(x)["total_MB"])
-    st.subheader("Sessions Over Time")
-    st.bar_chart(data.set_index(x)["sessions"])
-    st.markdown("---")
+st.divider()
 
+# ============ Peak Hours ============
+if view == "Daily":
     st.subheader("Peak Hours")
     peak = df.groupby("hour")["usage_MB"].sum().reset_index()
     peak.columns = ["hour", "usage_MB"]
     peak["hour"] = peak["hour"].astype(str) + ":00"
     st.bar_chart(peak.set_index("hour")["usage_MB"])
-    st.markdown("---")
 
-    st.subheader("7-Day Usage Forecast")
-    forecast_df, _ = load_forecast()
-    if forecast_df is None:
-        st.info("Not enough data to forecast.")
-    else:
-        forecast_df["day_label"] = pd.to_datetime(forecast_df["date"]).dt.strftime("%A %d %b")
-        fig2, ax2 = plt.subplots(figsize=(10, 3))
-        ax2.plot(forecast_df["day_label"], forecast_df["predicted_MB"], marker="o", color="#1f77b4")
-        ax2.fill_between(forecast_df["day_label"], forecast_df["lower_MB"], forecast_df["upper_MB"], alpha=0.2, color="#1f77b4")
-        ax2.set_xlabel("Day")
-        ax2.set_ylabel("Predicted MB")
-        ax2.tick_params(axis="x", rotation=15)
-        plt.tight_layout()
-        st.pyplot(fig2)
-        display_df = forecast_df[["day_label", "predicted_MB", "lower_MB", "upper_MB"]].copy()
-        display_df.columns = ["Day", "Predicted (MB)", "Lower (MB)", "Upper (MB)"]
-        st.dataframe(display_df, use_container_width=True)
-    st.markdown("---")
+st.divider()
 
-    st.subheader("Anomaly Detection")
-    anomalies = detect_anomalies()
-    def color_anomaly_row(row):
-        if abs(row["z_score"]) >= 3:
-            return ["background-color: #3d0000; color: #ff4c4c"] * len(row)
-        elif abs(row["z_score"]) >= 2:
-            return ["background-color: #3d2e00; color: #ffaa00"] * len(row)
-        return [""] * len(row)
-    if anomalies.empty:
-        st.success("No anomalous sessions detected.")
-    else:
-        st.warning(f"{len(anomalies)} anomalous sessions detected.")
-        st.dataframe(anomalies.tail(7).style.apply(color_anomaly_row, axis=1), use_container_width=True)
-    st.markdown("---")
+# ============ Anomalies ============
+st.subheader("Anomaly Detection")
+anomalies = detect_anomalies()
 
-    st.subheader("Detailed Data")
-    st.dataframe(data.tail(7), use_container_width=True)
+def color_anomaly_row(row):
+    if abs(row["z_score"]) >= 3:
+        return ["background-color: #3d0000; color: #ff4c4c"] * len(row)
+    elif abs(row["z_score"]) >= 2:
+        return ["background-color: #3d2e00; color: #ffaa00"] * len(row)
+    return [""] * len(row)
 
-if view == "Weekly":
-    st.subheader("Weekly Usage Heatmap")
-    day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    df["week_label"] = df["start_time"].dt.strftime("W%U %Y")
-    weekly_heat = df.groupby(["week_label", "day_name"])["usage_MB"].sum().reset_index()
-    weekly_pivot = weekly_heat.pivot(index="week_label", columns="day_name", values="usage_MB")
-    cols_present = [d for d in day_order if d in weekly_pivot.columns]
-    weekly_pivot = weekly_pivot[cols_present].fillna(0)
-    fig, ax = plt.subplots(figsize=(10, max(3, len(weekly_pivot) * 0.7)))
-    im = ax.imshow(weekly_pivot.values, aspect="auto", cmap="Greens")
-    ax.set_xticks(range(len(cols_present)))
-    ax.set_xticklabels(cols_present, rotation=30, ha="right", fontsize=9)
-    ax.set_yticks(range(len(weekly_pivot)))
-    ax.set_yticklabels(weekly_pivot.index, fontsize=9)
-    ax.set_xlabel("Day of Week")
-    ax.set_ylabel("Week")
-    plt.colorbar(im, ax=ax, label="MB")
-    plt.tight_layout()
-    st.pyplot(fig)
-    st.markdown("---")
+if anomalies.empty:
+    st.success("✓ No anomalous sessions detected.")
+else:
+    st.warning(f"⚠️ {len(anomalies)} anomalous sessions detected.")
+    st.dataframe(anomalies.tail(7).style.apply(color_anomaly_row, axis=1), use_container_width=True)
 
-    st.subheader("Data Usage Over Time (MB)")
-    st.line_chart(data.set_index(x)["total_MB"])
-    st.subheader("Sessions Over Time")
-    st.bar_chart(data.set_index(x)["sessions"])
-    st.markdown("---")
+st.divider()
 
-    st.subheader("Peak Hours")
-    peak = df.groupby("hour")["usage_MB"].sum().reset_index()
-    peak.columns = ["hour", "usage_MB"]
-    peak["hour"] = peak["hour"].astype(str) + ":00"
-    st.bar_chart(peak.set_index("hour")["usage_MB"])
-    st.markdown("---")
-
-    st.subheader("Detailed Data")
-    st.dataframe(data, use_container_width=True)
-
-if view == "Monthly":
-    st.subheader("Data Usage Over Time (MB)")
-    st.line_chart(data.set_index(x)["total_MB"])
-    st.subheader("Sessions Over Time")
-    st.bar_chart(data.set_index(x)["sessions"])
-    st.markdown("---")
-
-    st.subheader("Peak Hours")
-    peak = df.groupby("hour")["usage_MB"].sum().reset_index()
-    peak.columns = ["hour", "usage_MB"]
-    peak["hour"] = peak["hour"].astype(str) + ":00"
-    st.bar_chart(peak.set_index("hour")["usage_MB"])
-    st.markdown("---")
-
-    st.subheader("Detailed Data")
-    st.dataframe(data, use_container_width=True)
+# ============ Detailed Data Table ============
+st.subheader("Recent Data Summary")
+st.dataframe(data.tail(10), use_container_width=True, hide_index=True)
