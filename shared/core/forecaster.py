@@ -1,6 +1,11 @@
 import pandas as pd
 import os
+import logging
 from prophet import Prophet
+
+# Suppress Prophet's verbose logging
+logging.getLogger('prophet').setLevel(logging.WARNING)
+logging.getLogger('cmdstanpy').setLevel(logging.WARNING)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CSV_PATH = os.path.join(BASE_DIR, "data", "usage_log.csv")
@@ -14,33 +19,40 @@ def load_daily():
     return daily
 
 def forecast(days=7):
-    daily = load_daily()
+    try:
+        daily = load_daily()
 
-    if len(daily) < 10:
+        if len(daily) < 10:
+            return None, None
+
+        # Prophet will auto-detect cmdstanpy backend since it's installed
+        model = Prophet(
+            daily_seasonality=False,
+            weekly_seasonality=True,
+            yearly_seasonality=False,
+            changepoint_prior_scale=0.1
+        )
+        model.fit(daily)
+
+        future = model.make_future_dataframe(periods=days, freq="D")
+        forecast_df = model.predict(future)
+
+        today = pd.Timestamp.today().normalize()
+        forecast_df = forecast_df[forecast_df["ds"] >= today].head(days)
+
+        forecast_df = forecast_df[["ds", "yhat", "yhat_lower", "yhat_upper"]]
+        forecast_df.columns = ["date", "predicted_MB", "lower_MB", "upper_MB"]
+        forecast_df["predicted_MB"] = forecast_df["predicted_MB"].clip(lower=0).round(2)
+        forecast_df["lower_MB"]     = forecast_df["lower_MB"].clip(lower=0).round(2)
+        forecast_df["upper_MB"]     = forecast_df["upper_MB"].clip(lower=0).round(2)
+        forecast_df["date"]         = forecast_df["date"].dt.strftime("%Y-%m-%d")
+
+        return forecast_df, model
+    
+    except Exception as e:
+        logging.error(f"Forecasting error: {str(e)}")
+        print(f"Error in forecast: {str(e)}")
         return None, None
-
-    model = Prophet(
-        daily_seasonality=False,
-        weekly_seasonality=True,
-        yearly_seasonality=False,
-        changepoint_prior_scale=0.1
-    )
-    model.fit(daily)
-
-    future = model.make_future_dataframe(periods=days, freq="D")
-    forecast_df = model.predict(future)
-
-    today = pd.Timestamp.today().normalize()
-    forecast_df = forecast_df[forecast_df["ds"] >= today].head(days)
-
-    forecast_df = forecast_df[["ds", "yhat", "yhat_lower", "yhat_upper"]]
-    forecast_df.columns = ["date", "predicted_MB", "lower_MB", "upper_MB"]
-    forecast_df["predicted_MB"] = forecast_df["predicted_MB"].clip(lower=0).round(2)
-    forecast_df["lower_MB"]     = forecast_df["lower_MB"].clip(lower=0).round(2)
-    forecast_df["upper_MB"]     = forecast_df["upper_MB"].clip(lower=0).round(2)
-    forecast_df["date"]         = forecast_df["date"].dt.strftime("%Y-%m-%d")
-
-    return forecast_df, model
 
 if __name__ == "__main__":
     result, model = forecast(days=7)
