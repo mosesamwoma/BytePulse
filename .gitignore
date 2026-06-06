@@ -20,3 +20,4 @@ Thumbs.db
 .DS_Store
 venv/
 BytePulse.egg-info/
+linux/=1.0.0
